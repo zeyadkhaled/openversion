@@ -2,6 +2,12 @@
 
 ## Introduction
 
+- This read me will take you on how to create a deployable container that
+  deploys a receiving opencensus agent and then exports to multiple exporters
+  both traces and metrics data. 
+
+## Explanation
+
 - This library offers a way to receive, process, and export all your data
 (Metrics, Traces) in different formats and using mutliple services.
 
@@ -142,13 +148,17 @@ view.RegisterExporter(oce)
 
 ## Running this 
 
-- In the main directory where your docker-compose and otel-collector and otel-agent file are
+- In the directory where your docker-compose and otel-collector and otel-agent file are
   present run ``docker-compose up`` command.
 
 - If every thing is successful you will start seeing your stats showing in your
   deployed exporters.
+    - for this example:
+        - Jaeger at: http://localhost:16686
+        - Prometheus at: http://localhost:9090
+        - Google Cloud Tracing at: https://console.cloud.google.com/traces
 
-- If logging exporters with debug mode is added to your collector you will find
+- Logging exporters with debug mode is added to your collector and you will find
   output of all your collected metrics and traces in your docker output.
 
 
@@ -172,4 +182,5 @@ https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/master/ex
     - To use this variable load a local volume json file that contains your
       creds and load to inside the package and make the environment variable
       point to this file location inside the container.
-      
+        - This is an important step, to get your GOOGLE_APPLICATION_CREDENTIALS
+          check: https://developers.google.com/accounts/docs/application-default-credentials
