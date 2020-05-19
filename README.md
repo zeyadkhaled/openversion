@@ -104,6 +104,11 @@ https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter
 
 https://github.com/open-telemetry/opentelemetry-collector/blob/master/examples/demo/docker-compose.yaml
 
+## Environment variables in .env file
+
+- OTELCOL_IMG=otel/opentelemetry-collector-contrib:latest
+- To declare the base otel collector image 
+- OTELCOL_ARGS=
 
 ## Sending to openCensus agent all traces and metrics
 
@@ -145,3 +150,26 @@ view.RegisterExporter(oce)
 
 - If logging exporters with debug mode is added to your collector you will find
   output of all your collected metrics and traces in your docker output.
+
+
+## Additional Exporters and Receivers
+
+- The offical contributions package includes support to additional exporters and
+  receivers.
+
+- To use the contribution additional exporters:
+    - Change the OTELCOL_IMG=otel/opentelemetry-collector-contrib:latest in .env
+      file
+    - in the otel-collector-config.yaml file add your newly declared exporters
+      and check their configuration settings from the github repo
+
+https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/master/exporter/
+
+### Using stack driver for GCP tracing
+
+- Stack driver requires a special environment variable
+  GOOGLE_APPLICATION_CREDENTIALS
+    - To use this variable load a local volume json file that contains your
+      creds and load to inside the package and make the environment variable
+      point to this file location inside the container.
+      
