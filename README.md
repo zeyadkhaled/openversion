@@ -1,4 +1,4 @@
-# Using Open Telemetry Collector
+# Ready to use Open Telemetry Standalone Deployable Collector
 
 ## Introduction
 
