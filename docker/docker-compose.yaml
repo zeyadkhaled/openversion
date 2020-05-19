@@ -28,10 +28,10 @@ services:
     depends_on:
       - jaeger-all-in-one   
 
-  hoptest-collector:
+  collector:
     image: golang:1.12
     volumes:
-      - .:/usr/src
+      - ../.:/usr/src
     environment:
       - GO111MODULE=on
       - OTEL_AGENT_ENDPOINT=otel-collector:55678
