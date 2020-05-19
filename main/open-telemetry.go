@@ -17,40 +17,6 @@ import (
 	"go.opencensus.io/trace"
 )
 
-func doWork(ctx context.Context) {
-	// 4. Start a child span. This will be a child span because we've passed
-	// the parent span's ctx.
-	_, span := trace.StartSpan(ctx, "doWork")
-	// 5a. Make the span close at the end of this function.
-	defer span.End()
-
-	fmt.Println("doing busy work")
-	time.Sleep(80 * time.Millisecond)
-	buf := bytes.NewBuffer([]byte{0xFF, 0x00, 0x00, 0x00})
-	num, err := binary.ReadVarint(buf)
-	if err != nil {
-		// 6. Set status upon error
-		span.SetStatus(trace.Status{
-			Code:    trace.StatusCodeUnknown,
-			Message: err.Error(),
-		})
-	}
-
-	// 7. Annotate our span to capture metadata about our operation
-	span.Annotate([]trace.Attribute{
-		trace.Int64Attribute("bytes to int", num),
-	}, "Invoking doWork")
-	time.Sleep(20 * time.Millisecond)
-}
-
-func runThis() {
-	ctx, span := trace.StartSpan(context.Background(), "main")
-	defer span.End()
-	for i := 0; i < 10; i++ {
-		doWork(ctx)
-	}
-}
-
 func main() {
 	ocAgentAddr, ok := os.LookupEnv("OTEL_AGENT_ENDPOINT")
 	if !ok {
@@ -74,9 +40,7 @@ func main() {
 		DefaultSampler: trace.AlwaysSample(),
 	})
 
-	// runThis()
-
-	// Some stats
+	// Create and register metrics views
 	keyClient, _ := tag.NewKey("client")
 	keyMethod, _ := tag.NewKey("method")
 
@@ -118,35 +82,69 @@ func main() {
 		log.Fatalf("Failed to register views for metrics: %v", err)
 	}
 
-	ctx, _ := tag.New(context.Background(), tag.Insert(keyMethod, "repl"), tag.Insert(keyClient, "cli"))
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for {
-		// runThis()
-		startTime := time.Now()
-		_, span := trace.StartSpan(context.Background(), "Foo")
+		testMetrics()
+		testTraces()
+	}
+}
 
-		var sleep int64
-		switch modulus := time.Now().Unix() % 5; modulus {
-		case 0:
-			sleep = rng.Int63n(17001)
-		case 1:
-			sleep = rng.Int63n(8007)
-		case 2:
-			sleep = rng.Int63n(917)
-		case 3:
-			sleep = rng.Int63n(87)
-		case 4:
-			sleep = rng.Int63n(1173)
-		}
-		time.Sleep(time.Duration(sleep) * time.Millisecond)
-		span.End()
-		latencyMs := float64(time.Since(startTime)) / 1e6
-		nr := int(rng.Int31n(7))
-		for i := 0; i < nr; i++ {
-			randLineLength := rng.Int63n(999)
-			stats.Record(ctx, mLineLengths.M(randLineLength))
-		}
-		stats.Record(ctx, mLatencyMs.M(latencyMs))
+func tracesInner(ctx context.Context) {
+	_, span := trace.StartSpan(ctx, "inner function")
+	defer span.End()
+
+	time.Sleep(80 * time.Millisecond)
+	buf := bytes.NewBuffer([]byte{0xFF, 0x00, 0x00, 0x00})
+	num, err := binary.ReadVarint(buf)
+	if err != nil {
+		span.SetStatus(trace.Status{
+			Code:    trace.StatusCodeUnknown,
+			Message: err.Error(),
+		})
 	}
 
+	span.Annotate([]trace.Attribute{
+		trace.Int64Attribute("bytes to int", num),
+	}, "Invoking doWork")
+	time.Sleep(20 * time.Millisecond)
+}
+
+func testTraces() {
+	ctx, span := trace.StartSpan(context.Background(), "main function")
+	defer span.End()
+	for i := 0; i < 5; i++ {
+		tracesInner(ctx)
+	}
+}
+
+func testMetrics() {
+	keyClient, _ := tag.NewKey("client")
+	keyMethod, _ := tag.NewKey("method")
+
+	mLatencyMs := stats.Float64("latency", "The latency in milliseconds", "ms")
+	mLineLengths := stats.Int64("line_lengths", "The length of each line", "By")
+
+	ctx, _ := tag.New(context.Background(), tag.Insert(keyMethod, "repl"), tag.Insert(keyClient, "cli"))
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	startTime := time.Now()
+	var sleep int64
+	switch modulus := time.Now().Unix() % 5; modulus {
+	case 0:
+		sleep = rng.Int63n(17001)
+	case 1:
+		sleep = rng.Int63n(8007)
+	case 2:
+		sleep = rng.Int63n(917)
+	case 3:
+		sleep = rng.Int63n(87)
+	case 4:
+		sleep = rng.Int63n(1173)
+	}
+	time.Sleep(time.Duration(sleep) * time.Millisecond)
+	latencyMs := float64(time.Since(startTime)) / 1e6
+	nr := int(rng.Int31n(7))
+	for i := 0; i < nr; i++ {
+		randLineLength := rng.Int63n(999)
+		stats.Record(ctx, mLineLengths.M(randLineLength))
+	}
+	stats.Record(ctx, mLatencyMs.M(latencyMs))
 }
