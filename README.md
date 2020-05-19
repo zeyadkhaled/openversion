@@ -112,7 +112,7 @@ https://github.com/open-telemetry/opentelemetry-collector/blob/master/examples/d
 
 ## Environment variables in .env file in docker folder
 
-- OTELCOL_IMG=otel/opentelemetry-collector-contrib:latest
+- OTELCOL_IMG=otel/opentelemetry-collector-dev:latest
 - To declare the base otel collector image 
 - OTELCOL_ARGS=
 
@@ -123,14 +123,14 @@ https://github.com/open-telemetry/opentelemetry-collector/blob/master/examples/d
 
 ```
 ocAgentAddr, ok := os.LookupEnv("OTEL_AGENT_ENDPOINT")
-	if !ok {
-		ocAgentAddr = ocagent.DefaultAgentHost + ":" + string(ocagent.DefaultAgentPort)
-	}
-	oce, err := ocagent.NewExporter(
-		ocagent.WithAddress(ocAgentAddr),
-		ocagent.WithInsecure(),
-		ocagent.WithServiceName(fmt.Sprintf("example-go-%d", os.Getpid())),
-	)
+if !ok {
+  ocAgentAddr = ocagent.DefaultAgentHost + ":" + string(ocagent.DefaultAgentPort)
+}
+oce, err := ocagent.NewExporter(
+  ocagent.WithAddress(ocAgentAddr),
+	ocagent.WithInsecure(),
+	ocagent.WithServiceName(fmt.Sprintf("example-go-%d", os.Getpid())),
+)
 ```
 
 - Register it for Metrics and Traces usage
@@ -169,7 +169,7 @@ view.RegisterExporter(oce)
 
 - To use the contribution additional exporters:
     - Change the OTELCOL_IMG=otel/opentelemetry-collector-contrib:latest in .env
-      file
+  
     - in the otel-collector-config.yaml file add your newly declared exporters
       and check their configuration settings from the github repo
 
