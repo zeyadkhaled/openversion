@@ -8,12 +8,18 @@ exporters:
     namespace: promexample
     const_labels:
       label1: value1
+
   logging:
     loglevel: debug
-
-  jaeger:
-    endpoint: jaeger-all-in-one:14250
     
+  stackdriver:
+    project: digital-waters-276111
+    metric_prefix: prefix
+    number_of_workers: 3
+    skip_create_metric_descriptor: true
+
+  jaeger_thrift_http:
+    url: http://jaeger-all-in-one:14268/api/traces
 
 processors:
   batch:
@@ -31,7 +37,7 @@ service:
   pipelines:
     traces:
       receivers: [opencensus]
-      exporters: [logging, jaeger]
+      exporters: [logging,stackdriver,jaeger_thrift_http]
       processors: [batch, queued_retry]
     metrics:
       receivers: [opencensus]
