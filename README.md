@@ -133,3 +133,15 @@ view.RegisterExporter(oce)
    agonistic metrics and traces that will be exported to all your registered
    exporters.
    go.opencensus.io/
+
+
+## Running this 
+
+- In the main directory where your docker-compose and otel-collector and otel-agent file are
+  present run ``docker-compose up`` command.
+
+- If every thing is successful you will start seeing your stats showing in your
+  deployed exporters.
+
+- If logging exporters with debug mode is added to your collector you will find
+  output of all your collected metrics and traces in your docker output.
