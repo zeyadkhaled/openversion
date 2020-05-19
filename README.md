@@ -110,7 +110,7 @@ https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter
 
 https://github.com/open-telemetry/opentelemetry-collector/blob/master/examples/demo/docker-compose.yaml
 
-## Environment variables in .env file
+## Environment variables in .env file in docker folder
 
 - OTELCOL_IMG=otel/opentelemetry-collector-contrib:latest
 - To declare the base otel collector image 
@@ -148,8 +148,8 @@ view.RegisterExporter(oce)
 
 ## Running this 
 
-- In the directory where your docker-compose and otel-collector and otel-agent file are
-  present run ``docker-compose up`` command.
+- Move to docker folder ``cd /docker``
+- Run ``docker-compose up`` command.
 
 - If every thing is successful you will start seeing your stats showing in your
   deployed exporters.
