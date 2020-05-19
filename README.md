@@ -1,4 +1,4 @@
-# Open Telemetry collector library
+# Using Open Telemetry Collector
 
 ## Introduction
 
