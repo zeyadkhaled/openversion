@@ -13,7 +13,7 @@ additional backends coming from the community contributions.
 
 OpenTelemetry provides a single set of APIs, libraries, agents, and collector
 services to capture distributed traces and metrics from your application. 
-[https://opentelemetry.io/](OpenTelemetry Website)
+(OpenTelemetry Website)[https://opentelemetry.io/]
 
 #### What are traces, metrics, and logs?
 
