@@ -234,7 +234,6 @@ language. [Exporters in Depth](https://github.com/open-telemetry/opentelemetry-c
 
 ## Build a collector that uses OTLP to collect and export (Needs restructuring)
 
-```
 - For this step a docker-compose file is created.
 
 - In this file declare all your used exporters and services. 
@@ -247,13 +246,13 @@ language. [Exporters in Depth](https://github.com/open-telemetry/opentelemetry-c
 
 https://github.com/open-telemetry/opentelemetry-collector/blob/master/examples/demo/docker-compose.yaml
 
-## Environment variables in .env file in docker folder
+### Environment variables in .env file in docker folder
 
 - OTELCOL_IMG=otel/opentelemetry-collector-dev:latest
 - To declare the base otel collector image 
 - OTELCOL_ARGS=
 
-## Sending to openCensus agent all traces and metrics
+### Sending to OTLP agent all traces and metrics
 
 - In your main.go of your application declare your OpenCensusAgent which is your
   agent or collectors recieving endpoint that is declared in docker-compose file.
@@ -283,7 +282,7 @@ view.RegisterExporter(oce)
    go.opencensus.io/
 
 
-## Running this 
+### Running this 
 
 - Move to docker folder ``cd /docker``
 - Run ``docker-compose up`` command.
@@ -299,7 +298,7 @@ view.RegisterExporter(oce)
   output of all your collected metrics and traces in your docker output.
 
 
-## Additional Exporters and Receivers
+###  Additional Exporters and Receivers
 
 - The offical contributions package includes support to additional exporters and
   receivers.
@@ -312,7 +311,7 @@ view.RegisterExporter(oce)
 
 https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/master/exporter/
 
-### Using stack driver for GCP tracing
+####  Using stack driver for GCP tracing
 
 - Stack driver requires a special environment variable
   GOOGLE_APPLICATION_CREDENTIALS
@@ -322,7 +321,6 @@ https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/master/ex
         - This is an important step, to get your GOOGLE_APPLICATION_CREDENTIALS
           check: https://developers.google.com/accounts/docs/application-default-credentials
 
-```
 
 ## Export Metrics and Traces to your collector
 
