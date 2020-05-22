@@ -230,59 +230,100 @@ services to capture distributed traces and metrics from your application.
 ```
 
 - Each exporter have different configuration but follows the same declaration
-language. [Exporters in Depth](https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter)
+language. 
+[Exporters in Depth](https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter)
 
-## Build a collector that uses OTLP to collect and export (Needs restructuring)
+## Build a collector that uses OpenTelemetry Exporter and Reciever
 
-- For this step a docker-compose file is created.
+- This part is broken into 3 parts:
 
-- In this file declare all your used exporters and services. 
+### OTEL(open-telemetry) collector config file
 
-- Declare a collector and/or agent service which will expose a port and this
-  will be used as an opencensus reciever.
+- This file is where the collector pipelines are declared.
 
-- Include your application as service and make it depend on the collector or
-  agent.
-
-https://github.com/open-telemetry/opentelemetry-collector/blob/master/examples/demo/docker-compose.yaml
-
-### Environment variables in .env file in docker folder
-
-- OTELCOL_IMG=otel/opentelemetry-collector-dev:latest
-- To declare the base otel collector image 
-- OTELCOL_ARGS=
-
-### Sending to OTLP agent all traces and metrics
-
-- In your main.go of your application declare your OpenCensusAgent which is your
-  agent or collectors recieving endpoint that is declared in docker-compose file.
+- A full Collector file that has an OTLP(open-telemetry protocol) reciever,
+  Prometheus and Stackdriver Exporter, Some processors and extensions, and one Metric and One
+  Trace pipeline will look like this:
 
 ```
-ocAgentAddr, ok := os.LookupEnv("OTEL_AGENT_ENDPOINT")
-if !ok {
-  ocAgentAddr = ocagent.DefaultAgentHost + ":" + string(ocagent.DefaultAgentPort)
-}
-oce, err := ocagent.NewExporter(
-  ocagent.WithAddress(ocAgentAddr),
-	ocagent.WithInsecure(),
-	ocagent.WithServiceName(fmt.Sprintf("example-go-%d", os.Getpid())),
-)
+  receivers:
+  otlp:
+    endpoint: 0.0.0.0:55678
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: promexample
+    const_labels:
+      label1: value1
+    
+  stackdriver:
+    project: digital-waters-276111
+    metric_prefix: prefix
+    number_of_workers: 3
+    skip_create_metric_descriptor: true
+
+processors:
+  batch:
+  queued_retry:
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
+
+service:
+  extensions: [pprof, zpages, health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [logging,stackdriver]
+      processors: [batch, queued_retry]
+    metrics:
+      receivers: [otlp]
+      exporters: [logging,prometheus]
 ```
 
-- Register it for Metrics and Traces usage
+### Docker compose file to run your service + collector
 
-```
-trace.RegisterExporter(oce)
-view.RegisterExporter(oce)
- ```
+- This is a docker-compose file that declares 
+  - Collector
+  - Your service
+  - Used exporters i.e Prometheus, Jaeger
 
- - Check documentation of how to use this client library to send vendor
-   agonistic metrics and traces that will be exported to all your registered
-   exporters.
-   go.opencensus.io/
+- NOTES: 
+  - Prometheus needs a prometheus config file to be loaded so be sure to declare
+    such a file.
+  - a .env file is needed with the docker image:tag of the collector and other
+    required arguments.
+  - Stackdriver requires GOOGLE_APPLICATION_CREDENTIALS environment variable to
+    be set inside your collector container. To do so, load a local volume
+    internally and set an environment variable with the internal location.
+    - This is an important step, to get your GOOGLE_APPLICATION_CREDENTIALS
+          Check: [Google App Credentials](https://developers.google.com/accounts/docs/application-default-credentials)
+
+### OTLP exporter declaration inside your service
+
+- In your main.go of your application declare your exporter set with the address
+  of your collector(Reciever) address. This address should be passed in the docker-compose
+  file.
+
+  ```
+  import (
+	    "go.opentelemetry.io/otel/exporters/otlp"
+  )
+  collectorAddr, ok := os.LookupEnv("OTEL_RECIEVER_ENDPOINT")
+	if !ok {
+		collectorAddr = otlp.DefaultCollectorHost + ":" + string(otlp.DefaultCollectorHost)
+	}
+	exporter, err := otlp.NewExporter(otlp.WithAddress(collectorAddr), otlp.WithInsecure())
+  ```
+-  For tracing you can then use this exporter to set a global trace provider.
 
 
-### Running this 
+## Running this 
 
 - Move to docker folder ``cd /docker``
 - Run ``docker-compose up`` command.
@@ -290,15 +331,10 @@ view.RegisterExporter(oce)
 - If every thing is successful you will start seeing your stats showing in your
   deployed exporters.
     - for this example:
-        - Jaeger at: http://localhost:16686
         - Prometheus at: http://localhost:9090
         - Google Cloud Tracing at: https://console.cloud.google.com/traces
 
-- Logging exporters with debug mode is added to your collector and you will find
-  output of all your collected metrics and traces in your docker output.
-
-
-###  Additional Exporters and Receivers
+##  Additional Exporters and Receivers
 
 - The offical contributions package includes support to additional exporters and
   receivers.
@@ -311,18 +347,4 @@ view.RegisterExporter(oce)
 
 https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/master/exporter/
 
-####  Using stack driver for GCP tracing
-
-- Stack driver requires a special environment variable
-  GOOGLE_APPLICATION_CREDENTIALS
-    - To use this variable load a local volume json file that contains your
-      creds and load to inside the package and make the environment variable
-      point to this file location inside the container.
-        - This is an important step, to get your GOOGLE_APPLICATION_CREDENTIALS
-          check: https://developers.google.com/accounts/docs/application-default-credentials
-
-
-## Export Metrics and Traces to your collector
-
-
-## Try demo project
+## Demo Project
