@@ -304,7 +304,7 @@ service:
     - This is an important step, to get your GOOGLE_APPLICATION_CREDENTIALS
           Check: [Google App Credentials](https://developers.google.com/accounts/docs/application-default-credentials)
 
-### OTLP exporter declaration inside your service
+### Declare an OTLP exporter inside your service
 
 - In your main.go of your application declare your exporter set with the address
   of your collector(Reciever) address. This address should be passed in the docker-compose
@@ -345,6 +345,6 @@ service:
     - in the otel-collector-config.yaml file add your newly declared exporters
       and check their configuration settings from the github repo
 
-https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/master/exporter/
+[Additional Exporters](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/master/exporter/)
 
 ## Demo Project
