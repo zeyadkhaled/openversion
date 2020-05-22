@@ -15,11 +15,11 @@ import (
 )
 
 func initTracer() {
-	ocAgentAddr, ok := os.LookupEnv("OTEL_AGENT_ENDPOINT")
+	collectorAddr, ok := os.LookupEnv("OTEL_RECIEVER_ENDPOINT")
 	if !ok {
-		ocAgentAddr = otlp.DefaultCollectorHost + ":" + string(otlp.DefaultCollectorHost)
+		collectorAddr = otlp.DefaultCollectorHost + ":" + string(otlp.DefaultCollectorHost)
 	}
-	exporter, err := otlp.NewExporter(otlp.WithAddress(ocAgentAddr), otlp.WithInsecure())
+	exporter, err := otlp.NewExporter(otlp.WithAddress(collectorAddr), otlp.WithInsecure())
 
 	if err != nil {
 		log.Fatal(err)

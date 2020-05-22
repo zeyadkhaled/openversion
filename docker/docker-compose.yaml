@@ -34,7 +34,7 @@ services:
       - ../.:/usr/src
     environment:
       - GO111MODULE=on
-      - OTEL_AGENT_ENDPOINT=otel-collector:55678
+      - OTEL_RECIEVER_ENDPOINT=otel-collector:55678
     command: ["bash", "-c", "go run /usr/src/demo.go"]
     depends_on:
       - otel-collector
