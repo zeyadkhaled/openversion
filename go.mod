@@ -15,7 +15,7 @@ require (
 	github.com/rs/cors v1.7.0
 	github.com/rs/zerolog v1.18.0
 	go.opentelemetry.io/otel v0.6.0
-	go.opentelemetry.io/otel/exporters/otlp v0.6.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp v0.6.0
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
