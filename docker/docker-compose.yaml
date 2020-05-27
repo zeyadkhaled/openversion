@@ -31,11 +31,11 @@ services:
   collector:
     image: golang:1.12
     volumes:
-      - ../.:/usr/src
+      - ../cmd:/usr/src
     environment:
       - GO111MODULE=on
       - OTEL_RECIEVER_ENDPOINT=otel-collector:55678
-    command: ["bash", "-c", "go run /usr/src/demo.go"]
+    command: ["bash", "-c", "go run /usr/src/main.go"]
     depends_on:
       - otel-collector
   
