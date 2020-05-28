@@ -8,10 +8,6 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/rs/zerolog"
-	"go.opentelemetry.io/otel/api/correlation"
-	"go.opentelemetry.io/otel/api/global"
-	"go.opentelemetry.io/otel/api/trace"
-	"go.opentelemetry.io/otel/plugin/httptrace"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/errs"
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/errs/errshttp"
@@ -102,21 +98,6 @@ func (api versionAPI) updateVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api versionAPI) listVersions(w http.ResponseWriter, r *http.Request) {
-	// ####TRACING START####
-	tracer := global.Tracer("v2/list_versions")
-	attrs, entries, _ := httptrace.Extract(r.Context(), r)
-	r = r.WithContext(correlation.ContextWithMap(r.Context(), correlation.NewMap(correlation.MapUpdate{
-		MultiKV: entries,
-	})))
-
-	ctx, span := tracer.Start(
-		r.Context(),
-		"Endpoint Hit",
-		trace.WithAttributes(attrs...),
-	)
-	defer span.End()
-	// ####TRACING END####
-
 	lim := 100
 	if l, err := strconv.Atoi(r.FormValue("limit")); err == nil {
 		lim = l
@@ -132,7 +113,7 @@ func (api versionAPI) listVersions(w http.ResponseWriter, r *http.Request) {
 	f.LastAt = l
 	f.LastID = r.FormValue("last_id")
 
-	resp, err := api.svc.List(ctx, f, r.FormValue("cursor"), lim)
+	resp, err := api.svc.List(r.Context(), f, r.FormValue("cursor"), lim)
 	if err != nil {
 		errshttp.Handle(api.logger, w, r, err)
 		return

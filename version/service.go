@@ -9,9 +9,6 @@ import (
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/errs"
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/filterenc"
 	"go.opentelemetry.io/otel/api/global"
-	"go.opentelemetry.io/otel/api/kv"
-	"go.opentelemetry.io/otel/api/kv/value"
-	"go.opentelemetry.io/otel/api/trace"
 )
 
 type Service struct {
@@ -119,22 +116,8 @@ type PaginatedApplications struct {
 }
 
 func (svc *Service) List(ctx context.Context, _ Filter, cursor string, limit int) (PaginatedApplications, error) {
-	// ####TRACING START####
-	tracer := global.Tracer("v2/list_versions")
-	attrs := []kv.KeyValue{
-		{
-			Key:   kv.Key("Limit"),
-			Value: value.Int(limit),
-		},
-	}
-
-	ctx, span := tracer.Start(
-		ctx,
-		"Service Hit",
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := global.Tracer("service").Start(ctx, "service.list")
 	defer span.End()
-	// ####TRACING END####
 
 	f := Filter{}
 	applications, err := svc.store.List(ctx, f, limit)

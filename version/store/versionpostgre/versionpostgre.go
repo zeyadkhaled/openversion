@@ -10,8 +10,6 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel/api/global"
-	"go.opentelemetry.io/otel/api/kv"
-	"go.opentelemetry.io/otel/api/trace"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/errs"
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version"
@@ -107,17 +105,8 @@ func (store *Store) Get(ctx context.Context, id string) (a version.Application, 
 }
 
 func (store *Store) List(ctx context.Context, f version.Filter, limit int) (apps []version.Application, err error) {
-	// ####TRACING START####
-	tracer := global.Tracer("v2/list_versions")
-	attrs := []kv.KeyValue{}
-
-	ctx, span := tracer.Start(
-		ctx,
-		"Postgre Hit",
-		trace.WithAttributes(attrs...),
-	)
+	ctx, span := global.Tracer("service").Start(ctx, "store.postgre.list")
 	defer span.End()
-	// ####TRACING END####
 
 	query := `SELECT "id", "min_version", "package",
 			 "created_at", "updated_at"
