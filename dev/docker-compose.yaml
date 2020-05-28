@@ -1,0 +1,63 @@
+version: "3.1"
+services:
+
+  redis:
+    image: redis:4
+    ports:
+      - "6379:6379"
+    entrypoint: 
+      "redis-server"
+
+  db:
+    image: postgres:11
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: roottoor
+      POSTGRES_DB: backend
+
+  open-telemetry-demo:
+    build: ../.
+    environment:
+      - GO111MODULE=on
+      - OTEL_RECIEVER_ENDPOINT=otel-collector:55678
+    depends_on:
+      - otel-collector
+      - db 
+      - redis   
+    ports: 
+      - "8088:8088"
+
+  jaeger-all-in-one:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14268"
+      - "14250"
+
+  otel-collector:
+    image: ${OTELCOL_IMG}
+    command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - /Users/zeyad/gs.json:/etc/gs.json
+    environment:
+        - GOOGLE_APPLICATION_CREDENTIALS=/etc/gs.json    
+    ports:
+      - "1888:1888"   
+      - "8888:8888"   
+      - "8889:8889"   
+      - "13133:13133" 
+      - "55678:55678"       
+      - "55680:55679"
+    depends_on:
+      - jaeger-all-in-one   
+  
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
