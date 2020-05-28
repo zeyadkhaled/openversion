@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/auth"
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/errs"
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/filterenc"
 	"go.opentelemetry.io/otel/api/global"
@@ -30,13 +29,9 @@ type Store interface {
 }
 
 func (svc *Service) Add(ctx context.Context, a *Application) error {
-	u := auth.UserFromContext(ctx)
-	if !u.HasRole(auth.RoleVersionsMake) {
-		return errs.E{
-			Kind:    errs.KindForbidden,
-			Wrapped: fmt.Errorf("user not have version-make role"),
-		}
-	}
+	ctx, span := global.Tracer("service").Start(ctx, "service.Add")
+	defer span.End()
+
 	var errParams []string
 
 	if a.ID == "" {
@@ -56,7 +51,7 @@ func (svc *Service) Add(ctx context.Context, a *Application) error {
 	a.CreatedAt = now
 	a.UpdatedAt = now
 
-	err := svc.store.Upsert(context.Background(), *a)
+	err := svc.store.Upsert(ctx, *a)
 	if err == nil {
 		return nil
 	}
@@ -65,22 +60,15 @@ func (svc *Service) Add(ctx context.Context, a *Application) error {
 }
 
 func (svc *Service) Get(ctx context.Context, id string) (Application, error) {
-	u := auth.UserFromContext(ctx)
-	if !u.HasRole(auth.RoleVersionsList) {
-		return Application{}, errs.E{
-			Kind:    errs.KindForbidden,
-			Wrapped: fmt.Errorf("user not have versions-list role"),
-		}
-	}
+	ctx, span := global.Tracer("service").Start(ctx, "service.Get")
+	defer span.End()
 
 	return svc.store.Get(ctx, id)
 }
 
 func (svc *Service) UpdateVersion(ctx context.Context, a Application) error {
-	u := auth.UserFromContext(ctx)
-	if !u.HasRole(auth.RoleVersionsMake) {
-		return errs.E{Kind: errs.KindForbidden}
-	}
+	ctx, span := global.Tracer("service").Start(ctx, "service.UpdateVersion")
+	defer span.End()
 
 	if a.ID == "" {
 		return errs.E{
@@ -116,7 +104,7 @@ type PaginatedApplications struct {
 }
 
 func (svc *Service) List(ctx context.Context, _ Filter, cursor string, limit int) (PaginatedApplications, error) {
-	ctx, span := global.Tracer("service").Start(ctx, "service.list")
+	ctx, span := global.Tracer("service").Start(ctx, "service.List")
 	defer span.End()
 
 	f := Filter{}
