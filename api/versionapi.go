@@ -73,7 +73,6 @@ func (api versionAPI) updateVersion(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&app)
 	if err != nil {
 		errshttp.Handle(api.logger, w, r, errs.E{
-			Kind:    errs.KindParameterErr,
 			Wrapped: err,
 		})
 		return
