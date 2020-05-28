@@ -30,7 +30,6 @@ func initTracer() {
 	if !ok {
 		collectorAddr = otlp.DefaultCollectorHost + ":" + string(otlp.DefaultCollectorHost)
 	}
-	// collectorAddr = "localhost:55678"
 	exporter, err := otlp.NewExporter(otlp.WithAddress(collectorAddr), otlp.WithInsecure())
 
 	if err != nil {
@@ -81,6 +80,7 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	g, ctx := errgroup.WithContext(ctx)
+
 	g.Go(func() error {
 		defer cancel()
 		server := &http.Server{

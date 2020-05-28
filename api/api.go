@@ -21,7 +21,7 @@ func traceMW(log zerolog.Logger) func(next http.Handler) http.Handler {
 			attrs, _, _ := httptrace.Extract(r.Context(), r)
 			ctx, span := tracer.Start(
 				r.Context(),
-				"api.endpoint:"+r.URL.EscapedPath(),
+				"api.endpoint:"+r.URL.EscapedPath()+":"+r.Method,
 				trace.WithAttributes(attrs...),
 			)
 			defer span.End()

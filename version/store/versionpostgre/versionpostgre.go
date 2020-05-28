@@ -25,6 +25,9 @@ type querier interface {
 }
 
 func get(ctx context.Context, q querier, id string) (a version.Application, err error) {
+	ctx, span := global.Tracer("service").Start(ctx, "store.postgre.get")
+	defer span.End()
+
 	const query = `SELECT "id", "min_version", "package","created_at", "updated_at"
 		 FROM backend.versions WHERE "id" = $1`
 	row := q.QueryRow(ctx, query, id)
@@ -56,6 +59,9 @@ func New(ctx context.Context, connStr string, logger zerolog.Logger) (*Store, er
 }
 
 func (store *Store) Upsert(ctx context.Context, a version.Application) error {
+	ctx, span := global.Tracer("service").Start(ctx, "store.postgre.Upsert")
+	defer span.End()
+
 	tx, err := store.pool.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to start transaction: %w", err)
@@ -101,11 +107,14 @@ func (store *Store) Upsert(ctx context.Context, a version.Application) error {
 }
 
 func (store *Store) Get(ctx context.Context, id string) (a version.Application, err error) {
+	ctx, span := global.Tracer("service").Start(ctx, "store.postgre.Get")
+	defer span.End()
+
 	return get(ctx, store.pool, id)
 }
 
 func (store *Store) List(ctx context.Context, f version.Filter, limit int) (apps []version.Application, err error) {
-	ctx, span := global.Tracer("service").Start(ctx, "store.postgre.list")
+	ctx, span := global.Tracer("service").Start(ctx, "store.postgre.List")
 	defer span.End()
 
 	query := `SELECT "id", "min_version", "package",
