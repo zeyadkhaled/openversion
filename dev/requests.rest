@@ -1,0 +1,27 @@
+@baseURL = http://localhost:8088
+
+# @name addversion
+POST {{baseURL}}/v2/version HTTP/1.1
+
+{
+	"id": "rider_IOS5",
+	"code" : "99",
+	"package" : "com.ios.zeyad"
+}
+###
+
+# @name getversion
+GET {{baseURL}}/v2/version/rider_Android HTTP/1.1
+###
+
+# @name updateversion
+PUT {{baseURL}}/v2/version/rider_Android HTTP/1.1
+
+{
+	"id": "rider_Android",
+	"package" : "com.ios.zeyadd"
+}
+###
+
+# @name listversions
+GET {{baseURL}}/v2/version HTTP/1.1
