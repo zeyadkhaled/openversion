@@ -11,6 +11,8 @@ import (
 	"github.com/go-redis/redis/v7"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel/api/global"
+	"go.opentelemetry.io/otel/api/kv"
+	"go.opentelemetry.io/otel/api/trace"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version"
 )
@@ -108,11 +110,17 @@ func (store *Store) Upsert(ctx context.Context, a version.Application) error {
 }
 
 func (store *Store) List(ctx context.Context, filter version.Filter, limit int) ([]version.Application, error) {
+	// ####TRACING START####
 	tracer := global.Tracer("v2/list_versions")
-	tracer.WithSpan(ctx, "Redis Store",
-		func(ctx context.Context) error {
-			return nil
-		},
+	attrs := []kv.KeyValue{}
+
+	ctx, span := tracer.Start(
+		ctx,
+		"Redis Hit",
+		trace.WithAttributes(attrs...),
 	)
+	defer span.End()
+	// ####TRACING END####
+
 	return store.base.List(ctx, filter, limit)
 }
