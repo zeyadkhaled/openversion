@@ -1,0 +1,2 @@
+- Add migrate postgres migration tool
+- run: gomigrate --source=file://. --database=postgres://postgres:roottoor@localhost:5432/backend\?sslmode=disable up
