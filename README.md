@@ -1,5 +1,12 @@
 # Open Telemetry Collector with OTLP Exporter
 
+# Table of Contents
+
+1. [Introduction](#introduction)
+2. [Getting Started](#get-started)
+3. [Running the Collector](#running-this)
+4. [Demo Project](#demo-project)
+
 ## Introduction
 
 The repository explains what is OpenTelemetry, OpenTelemetry Collector, OTLP
@@ -233,6 +240,19 @@ services to capture distributed traces and metrics from your application.
 language. 
 [Exporters in Depth](https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter)
 
+#####  Additional Exporters and Receivers
+
+- The offical contributions package includes support to additional exporters and
+  receivers.
+
+- To use the contribution additional exporters:
+    - Change the OTELCOL_IMG=otel/opentelemetry-collector-contrib:latest in .env
+  
+    - in the otel-collector-config.yaml file add your newly declared exporters
+      and check their configuration settings from the github repo
+
+[Additional Exporters](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/master/exporter/)
+
 ## Build a collector that uses OpenTelemetry Exporter and Reciever
 
 - This part is broken into 3 parts:
@@ -333,18 +353,5 @@ service:
     - for this example:
         - Prometheus at: http://localhost:9090
         - Google Cloud Tracing at: https://console.cloud.google.com/traces
-
-##  Additional Exporters and Receivers
-
-- The offical contributions package includes support to additional exporters and
-  receivers.
-
-- To use the contribution additional exporters:
-    - Change the OTELCOL_IMG=otel/opentelemetry-collector-contrib:latest in .env
-  
-    - in the otel-collector-config.yaml file add your newly declared exporters
-      and check their configuration settings from the github repo
-
-[Additional Exporters](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/master/exporter/)
 
 ## Demo Project
