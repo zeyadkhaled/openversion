@@ -26,14 +26,11 @@ func newVersionAPI(svc *version.Service, logger zerolog.Logger) versionAPI {
 	}
 }
 
-// Routes creates a REST router for the todos resource
 func (api versionAPI) Routes(r chi.Router) {
 	r.Post("/v2/version", api.newVersion)
 	r.Get("/v2/version/{appid}", api.getVersion)
 	r.Put("/v2/version/{appid}", api.updateVersion)
 	r.Get("/v2/version", api.listVersions)
-
-	r.Get("/v1/app-versions/rider", api.getStaticVersion)
 }
 
 func (api versionAPI) newVersion(w http.ResponseWriter, r *http.Request) {
@@ -119,18 +116,6 @@ func (api versionAPI) listVersions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonWrite(api.logger, w, http.StatusOK, resp)
-}
-
-func (api versionAPI) getStaticVersion(w http.ResponseWriter, r *http.Request) {
-
-	plat := r.FormValue("platform")
-	app, err := api.svc.Get(r.Context(), "rider_"+plat)
-	if err != nil {
-		errshttp.Handle(api.logger, w, r, err)
-		return
-	}
-
-	jsonWrite(api.logger, w, http.StatusOK, app)
 }
 
 func jsonWrite(logger zerolog.Logger, w http.ResponseWriter, status int, t interface{}) {

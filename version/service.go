@@ -89,9 +89,7 @@ func (svc *Service) UpdateVersion(ctx context.Context, a Application) error {
 }
 
 type Filter struct {
-	// Rest is for sorting and pagination. LastAt is used as page selection so
-	// it is also used in filtering. If LastID is empty it is not used in filtering.
-	LastAt time.Time `json:"last_at,omitempty"` // createdAt
+	LastAt time.Time `json:"last_at,omitempty"`
 	LastID string    `json:"last_id,omitempty"`
 	Older  bool      `json:"older,omitempty"`
 }

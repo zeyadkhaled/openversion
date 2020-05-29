@@ -31,10 +31,8 @@ func Postgre(err error, op Op) error {
 		}
 
 	}
-
 	if err == pgx.ErrNoRows {
 		return E{Kind: KindNotFound}
 	}
-
 	return err
 }

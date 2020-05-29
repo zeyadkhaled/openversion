@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS backend.versions (
 
 
 INSERT INTO backend.versions ("id", "min_version","package", "created_at", "updated_at")
-    VALUES ('rider_Android', '10025','com.hoplagit.rider', '2019-12-05 12:10:21.553', '2019-12-05 12:10:21.553')
+    VALUES ('demo_1', '999','me.zdkd.app', '2019-12-05 12:10:21.553', '2019-12-05 12:10:21.553')
 ON CONFLICT ("id")
     DO NOTHING;
 

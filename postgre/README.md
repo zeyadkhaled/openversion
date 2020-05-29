@@ -1,0 +1,3 @@
+- Add migrate postgres migration tool:
+    - https://github.com/golang-migrate/migrate
+- run: gomigrate --source=file://. --database={POSTGRE_CONN_STR}\?sslmode=disable up

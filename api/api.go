@@ -50,7 +50,7 @@ func Handler(versionSvc version.Service, logger zerolog.Logger) *chi.Mux {
 		cors.Handler,
 	)
 
-	version := newVersionAPI(&versionSvc, logger.With().Str("api", "auth").Logger())
+	version := newVersionAPI(&versionSvc, logger.With().Str("api", "version").Logger())
 	version.Routes(r)
 
 	return r

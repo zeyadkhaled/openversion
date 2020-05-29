@@ -4,22 +4,22 @@
 POST {{baseURL}}/v2/version HTTP/1.1
 
 {
-	"id": "rider_IOS5",
+	"id": "demo_app",
 	"code" : "99",
 	"package" : "com.ios.zeyad"
 }
 ###
 
 # @name getversion
-GET {{baseURL}}/v2/version/rider_Android HTTP/1.1
+GET {{baseURL}}/v2/version/demo_app HTTP/1.1
 ###
 
 # @name updateversion
-PUT {{baseURL}}/v2/version/rider_Android HTTP/1.1
+PUT {{baseURL}}/v2/version/demo_app HTTP/1.1
 
 {
-	"id": "rider_Android",
-	"package" : "com.ios.zeyadd"
+	"id": "demo_app",
+	"package" : "com.ios.zeyad.new"
 }
 ###
 
