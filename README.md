@@ -345,7 +345,7 @@ service:
 
 ## Running this 
 
-- Move to docker folder ``cd /docker``
+- Move to dev folder ``cd /dev``
 - Run ``docker-compose up`` command.
 
 - If every thing is successful you will start seeing your stats showing in your
