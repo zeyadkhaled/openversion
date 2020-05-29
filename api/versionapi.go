@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/rs/zerolog"
@@ -99,17 +98,7 @@ func (api versionAPI) listVersions(w http.ResponseWriter, r *http.Request) {
 		lim = l
 	}
 
-	var f version.Filter
-	f.Older, _ = strconv.ParseBool(r.FormValue("older"))
-	l, err := time.Parse(time.RFC3339, r.FormValue("last_at"))
-	if err != nil {
-		l = time.Now()
-		f.Older = true
-	}
-	f.LastAt = l
-	f.LastID = r.FormValue("last_id")
-
-	resp, err := api.svc.List(r.Context(), f, r.FormValue("cursor"), lim)
+	resp, err := api.svc.List(r.Context(), lim)
 	if err != nil {
 		errshttp.Handle(api.logger, w, r, err)
 		return
