@@ -122,9 +122,9 @@ func (store *Store) Upsert(ctx context.Context, a version.Application) error {
 	return err
 }
 
-func (store *Store) List(ctx context.Context, filter version.Filter, limit int) ([]version.Application, error) {
+func (store *Store) List(ctx context.Context, limit int) ([]version.Application, error) {
 	ctx, span := global.Tracer("service").Start(ctx, "store.redis.List")
 	span.End()
 
-	return store.base.List(ctx, filter, limit)
+	return store.base.List(ctx, limit)
 }

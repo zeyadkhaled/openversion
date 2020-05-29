@@ -3,7 +3,6 @@ package versionpostgre
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/log/zerologadapter"
@@ -113,35 +112,15 @@ func (store *Store) Get(ctx context.Context, id string) (a version.Application, 
 	return get(ctx, store.pool, id)
 }
 
-func (store *Store) List(ctx context.Context, f version.Filter, limit int) (apps []version.Application, err error) {
+func (store *Store) List(ctx context.Context, limit int) (apps []version.Application, err error) {
 	ctx, span := global.Tracer("service").Start(ctx, "store.postgre.List")
 	defer span.End()
 
 	query := `SELECT "id", "min_version", "package",
 			 "created_at", "updated_at"
-			 FROM backend.versions WHERE`
+			 FROM backend.versions`
 
-	var args []interface{}
-	ind := 1
-
-	cmpChar := ">="
-	order := "ASC"
-	if f.Older {
-		cmpChar = "<="
-		order = "DESC"
-	}
-
-	parts := append([]string{}, fmt.Sprintf(`"created_at" %s $%d `, cmpChar, ind))
-	args = append(args, f.LastAt)
-	ind++
-
-	query += strings.Join(parts, " AND ")
-
-	query += fmt.Sprintf(` ORDER BY "created_at" %s, "id" %s LIMIT $%d`, order, order, ind)
-	// limit increased by one as filter gives last item and search result will include that result and removed later
-	args = append(args, limit+1)
-
-	rows, err := store.pool.Query(ctx, query, args...)
+	rows, err := store.pool.Query(ctx, query)
 	if err != nil {
 		return nil, errs.Postgre(err, errs.OpOther)
 	}
@@ -158,32 +137,6 @@ func (store *Store) List(ctx context.Context, f version.Filter, limit int) (apps
 		}
 
 		apps = append(apps, a)
-	}
-
-	if f.LastID != "" {
-		found := false
-		var i int
-		for i = range apps {
-			if apps[i].ID == f.LastID {
-				found = true
-				break
-			}
-		}
-		if found {
-			apps = apps[i+1:]
-		} else {
-			apps = []version.Application{}
-		}
-	}
-
-	if !f.Older {
-		for left, right := 0, len(apps)-1; left < right; left, right = left+1, right-1 {
-			apps[left], apps[right] = apps[right], apps[left]
-		}
-	}
-
-	if len(apps) > limit {
-		apps = apps[:limit]
 	}
 
 	return apps, nil

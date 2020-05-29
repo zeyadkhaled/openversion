@@ -6,26 +6,23 @@ import (
 	"time"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/errs"
-	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/filterenc"
 	"go.opentelemetry.io/otel/api/global"
 )
 
 type Service struct {
-	store     Store
-	filterEnc filterenc.Encer
+	store Store
 }
 
-func New(store Store, filterEnc filterenc.Encer) *Service {
+func New(store Store) *Service {
 	return &Service{
-		store:     store,
-		filterEnc: filterEnc,
+		store: store,
 	}
 }
 
 type Store interface {
 	Upsert(ctx context.Context, a Application) error
 	Get(ctx context.Context, id string) (Application, error)
-	List(ctx context.Context, filter Filter, limit int) ([]Application, error)
+	List(ctx context.Context, limit int) ([]Application, error)
 }
 
 func (svc *Service) Add(ctx context.Context, a *Application) error {
@@ -88,57 +85,14 @@ func (svc *Service) UpdateVersion(ctx context.Context, a Application) error {
 	return svc.store.Upsert(ctx, a)
 }
 
-type Filter struct {
-	LastAt time.Time `json:"last_at,omitempty"`
-	LastID string    `json:"last_id,omitempty"`
-	Older  bool      `json:"older,omitempty"`
-}
-
-type PaginatedApplications struct {
-	After    string        `json:"after"`
-	Current  string        `json:"current"`
-	Before   string        `json:"before"`
-	Elements []Application `json:"elements"`
-}
-
-func (svc *Service) List(ctx context.Context, _ Filter, cursor string, limit int) (PaginatedApplications, error) {
+func (svc *Service) List(ctx context.Context, limit int) ([]Application, error) {
 	ctx, span := global.Tracer("service").Start(ctx, "service.List")
 	defer span.End()
 
-	f := Filter{}
-	applications, err := svc.store.List(ctx, f, limit)
+	applications, err := svc.store.List(ctx, limit)
 	if err != nil {
-		return PaginatedApplications{}, err
+		return []Application{}, err
 	}
 
-	r := PaginatedApplications{
-		Elements: applications,
-	}
-
-	c, err := svc.filterEnc.CursorFromFilter(f)
-	if err != nil {
-		return PaginatedApplications{}, err
-	}
-	r.Current = c
-
-	if len(applications) > 0 {
-		returnFilter := Filter{}
-
-		c, err := svc.filterEnc.CursorFromFilter(returnFilter)
-		if err != nil {
-			return PaginatedApplications{}, err
-		}
-		r.Before = c
-
-		returnFilter.LastAt = applications[len(applications)-1].CreatedAt
-		returnFilter.LastID = applications[len(applications)-1].ID
-		returnFilter.Older = true
-		c, err = svc.filterEnc.CursorFromFilter(returnFilter)
-		if err != nil {
-			return PaginatedApplications{}, err
-		}
-		r.After = c
-	}
-
-	return r, nil
+	return applications, nil
 }
