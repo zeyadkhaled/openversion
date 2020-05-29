@@ -6,6 +6,7 @@
 2. [Getting Started](#get-started)
 3. [Running the Collector](#running-this)
 4. [Demo Project](#demo-project)
+5. [Extra info](#extras)
 
 ## Introduction
 
@@ -355,3 +356,36 @@ service:
         - Google Cloud Tracing at: https://console.cloud.google.com/traces
 
 ## Demo Project
+
+
+## Extras
+
+### Performance Notes
+
+#### Tracing performance
+
+- From exporter-side:
+  - Per config package of OPTL sdk/trace
+    - ```
+      DefaultMaxEventsPerSpan = 128
+      // DefaultMaxAttributesPerSpan is default max number of attributes per span
+      DefaultMaxAttributesPerSpan = 32
+      // DefaultMaxLinksPerSpan is default max number of links per span
+      DefaultMaxLinksPerSpan = 32
+    ```
+
+  - From examples found on open-telemetry go repository on github:
+
+    - use sdktrace.AlwaysSample sampler to sample all traces.   	
+    - In a production application, use sdktrace.ProbabilitySampler with a desired probability.
+
+- From collector-side:
+
+  - https://github.com/open-telemetry/opentelemetry-collector/blob/master/docs/performance.md
+  
+
+#### How to use spans optimally
+
+  - [https://github.com/open-telemetry/opentelemetry-specification/tree/master/specification/trace/semantic_conventions](Trace Semantic conventions)
+  
+  - [https://docs.lightstep.com/otel/spans-in-opentelemetry](Understanding Span Attributes)
