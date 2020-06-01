@@ -383,7 +383,17 @@ service:
 
   - https://github.com/open-telemetry/opentelemetry-collector/blob/master/docs/performance.md
   
+#### Collecting Metrics
 
+- So OpenTelemetry metrics api has 3 instruments to report metrics and summarized they are
+
+- There are three instruments you can use in OpenTelemetry, each defined by the method you call to send a metric event. They are:
+    - Counters, which you Add a value to. These are good for values that you'd like to think of as a rate, or changes in a quantity.
+    - Gauges, which you Set the value of. You can think of these as either a car's odometer (a monotonic gauge, it never decreases) or a car's speedometer (a non-monotonic gauge, as it can go up and down.)
+    - Measures, to which you Record a value. These are useful to build histograms or summaries, metric projections that let you calculate averages of many values.
+    [https://lightstep.com/blog/opentelemetry-101-what-are-metrics/](Understanding Metrics in OPTL)
+    
+    - [https://medium.com/thron-tech/how-we-implemented-red-and-use-metrics-for-monitoring-9a7db29382af](RED, USE, 4 Golden Signals)
 #### How to use spans optimally
 
   - [https://github.com/open-telemetry/opentelemetry-specification/tree/master/specification/trace/semantic_conventions](Trace Semantic conventions)
