@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"net/http/httputil"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version"
 	"go.opentelemetry.io/otel/api/global"
@@ -19,22 +20,26 @@ import (
 func traceMW(log zerolog.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+			path := "api.endpoint:" + r.URL.EscapedPath() + ":" + r.Method
 			tracer := global.Tracer("service")
 			attrs, _, _ := httptrace.Extract(r.Context(), r)
 			ctx, span := tracer.Start(
 				r.Context(),
-				"api.endpoint:"+r.URL.EscapedPath()+":"+r.Method,
+				path,
 				trace.WithAttributes(attrs...),
 			)
 			defer span.End()
 
-			commonLabels := []kv.KeyValue{
-				kv.String("work-room", "East Scriptorium"),
-				kv.String("occupancy", "69,105"),
-				kv.String("priority", "Ultra"),
-			}
-			meter := global.Meter("service_test")
-			metric.Must(meter).NewInt64Counter("api_hit").Add(ctx, 1, commonLabels...)
+			meter := global.Meter("service")
+			counter := metric.Must(meter).NewInt64Counter("api_hit").Bind(kv.String("endpoint", path))
+			defer counter.Unbind()
+			counter.Add(ctx, 1)
+
+			dump, _ := httputil.DumpRequestOut(r, true)
+			recorder := metric.Must(meter).NewInt64ValueRecorder("bytes_recieved").Bind(kv.String("endpoint", path))
+			defer recorder.Unbind()
+			recorder.Record(ctx, int64(len(dump)))
 
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
