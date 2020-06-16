@@ -43,7 +43,7 @@ func initService(ctx context.Context, logger zerolog.Logger) version.Service {
 }
 
 func main() {
-	initTracer()
+	initProviders()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	logger := zerolog.New(zerolog.NewConsoleWriter()).Level(zerolog.DebugLevel)

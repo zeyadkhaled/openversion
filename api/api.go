@@ -5,6 +5,8 @@ import (
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version"
 	"go.opentelemetry.io/otel/api/global"
+	"go.opentelemetry.io/otel/api/kv"
+	"go.opentelemetry.io/otel/api/metric"
 	"go.opentelemetry.io/otel/api/trace"
 	"go.opentelemetry.io/otel/plugin/httptrace"
 
@@ -25,6 +27,14 @@ func traceMW(log zerolog.Logger) func(next http.Handler) http.Handler {
 				trace.WithAttributes(attrs...),
 			)
 			defer span.End()
+
+			commonLabels := []kv.KeyValue{
+				kv.String("work-room", "East Scriptorium"),
+				kv.String("occupancy", "69,105"),
+				kv.String("priority", "Ultra"),
+			}
+			meter := global.Meter("service_test")
+			metric.Must(meter).NewInt64Counter("api_hit").Add(ctx, 1, commonLabels...)
 
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
