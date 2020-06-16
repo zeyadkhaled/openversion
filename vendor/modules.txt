@@ -1,3 +1,5 @@
+# github.com/DataDog/sketches-go v0.0.0-20190923095040-43f19ad77ff7
+github.com/DataDog/sketches-go/ddsketch
 # github.com/go-chi/chi v4.1.1+incompatible
 ## explicit
 github.com/go-chi/chi
@@ -81,6 +83,7 @@ go.opentelemetry.io/otel/api/metric/registry
 go.opentelemetry.io/otel/api/propagation
 go.opentelemetry.io/otel/api/trace
 go.opentelemetry.io/otel/api/unit
+go.opentelemetry.io/otel/internal/metric
 go.opentelemetry.io/otel/internal/trace/parent
 go.opentelemetry.io/otel/plugin/httptrace
 go.opentelemetry.io/otel/sdk
@@ -88,6 +91,16 @@ go.opentelemetry.io/otel/sdk/export/metric
 go.opentelemetry.io/otel/sdk/export/metric/aggregator
 go.opentelemetry.io/otel/sdk/export/trace
 go.opentelemetry.io/otel/sdk/internal
+go.opentelemetry.io/otel/sdk/metric
+go.opentelemetry.io/otel/sdk/metric/aggregator/array
+go.opentelemetry.io/otel/sdk/metric/aggregator/ddsketch
+go.opentelemetry.io/otel/sdk/metric/aggregator/histogram
+go.opentelemetry.io/otel/sdk/metric/aggregator/minmaxsumcount
+go.opentelemetry.io/otel/sdk/metric/aggregator/sum
+go.opentelemetry.io/otel/sdk/metric/controller/push
+go.opentelemetry.io/otel/sdk/metric/controller/time
+go.opentelemetry.io/otel/sdk/metric/integrator/simple
+go.opentelemetry.io/otel/sdk/metric/selector/simple
 go.opentelemetry.io/otel/sdk/resource
 go.opentelemetry.io/otel/sdk/trace
 go.opentelemetry.io/otel/sdk/trace/internal
@@ -97,11 +110,7 @@ go.opentelemetry.io/otel/exporters/otlp
 go.opentelemetry.io/otel/exporters/otlp/internal/transform
 # golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 ## explicit
-golang.org/x/crypto/chacha20
-golang.org/x/crypto/chacha20poly1305
-golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/pbkdf2
-golang.org/x/crypto/poly1305
 # golang.org/x/net v0.0.0-20200501053045-e0ff5e5a1de5
 ## explicit
 golang.org/x/net/http/httpguts
@@ -115,7 +124,6 @@ golang.org/x/net/trace
 golang.org/x/sync/errgroup
 # golang.org/x/sys v0.0.0-20200501052902-10377860bb8e
 ## explicit
-golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.2
