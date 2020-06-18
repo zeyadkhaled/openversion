@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"net/http/httputil"
 	"strings"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version"
@@ -38,16 +37,15 @@ func telemetryMW(log zerolog.Logger) func(next http.Handler) http.Handler {
 			)
 			defer span.End()
 
+			// Metrics start
 			meter := global.Meter("service")
-			dump, _ := httputil.DumpRequestOut(r, true)
-			labels := []kv.KeyValue{kv.String("endpoint", path),
-				kv.String("a", "a")}
-			counter := metric.Must(meter).NewInt64Counter("api.hit")
+			labels := []kv.KeyValue{kv.String("endpoint", path)}
+			counter := metric.Must(meter).NewInt64Counter("api.hit.count")
 			recorder := metric.Must(meter).NewInt64ValueRecorder("bytes.recieved")
 			meter.RecordBatch(ctx,
 				labels,
 				counter.Measurement(1),
-				recorder.Measurement(int64(len(dump))))
+				recorder.Measurement(r.ContentLength))
 
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
