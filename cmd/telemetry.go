@@ -36,7 +36,10 @@ func initProviders() *push.Controller {
 		push.WithPeriod(2*time.Second),
 	)
 	global.SetTraceProvider(tp)
-	global.SetMeterProvider(pusher.Provider())
 
+	// This sets OTLP as the global metric exporter
+	// global.SetMeterProvider(pusher.Provider())
 	pusher.Start()
+
+	return pusher
 }

@@ -47,7 +47,8 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	logger := zerolog.New(zerolog.NewConsoleWriter()).Level(zerolog.DebugLevel)
 	versionSvc := initService(ctx, logger)
-	defer initProviders().Stop()
+	// defer initProviders().Stop()
+	initProviders().Stop()
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {

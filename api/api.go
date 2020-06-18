@@ -1,8 +1,9 @@
 package api
 
 import (
-	"log"
 	"net/http"
+	"net/http/httputil"
+	"strings"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version"
 	"go.opentelemetry.io/otel/api/global"
@@ -18,11 +19,16 @@ import (
 	"github.com/rs/cors"
 )
 
-func traceMW(log zerolog.Logger) func(next http.Handler) http.Handler {
+func telemetryMW(log zerolog.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 			path := "api.endpoint:" + r.URL.EscapedPath() + ":" + r.Method
+			// Skips tracing and metric collection for prometheus exposed endpoint
+			if strings.Contains(path, "/metrics") {
+				next.ServeHTTP(w, r)
+				return
+			}
+			// Tracing start
 			tracer := global.Tracer("service")
 			attrs, _, _ := httptrace.Extract(r.Context(), r)
 			ctx, span := tracer.Start(
@@ -33,22 +39,15 @@ func traceMW(log zerolog.Logger) func(next http.Handler) http.Handler {
 			defer span.End()
 
 			meter := global.Meter("service")
-			// counter := metric.Must(meter).NewInt64Counter("api.hit").Bind(kv.String("endpoint", path))
-			// defer counter.Unbind()
-			// counter.Add(r.Context(), 1)
-
-			// dump, _ := httputil.DumpRequestOut(r, true)
-			// recorder := metric.Must(meter).NewInt64ValueRecorder("bytes.recieved").Bind(kv.String("endpoint", path))
-			// defer recorder.Unbind()
-			// recorder.Record(r.Context(), int64(len(dump)))
-
-			ll := []kv.KeyValue{kv.String("endpoint", path)}
-			counter := metric.Must(meter).NewInt64Counter("api.hit", metric.WithDescription("Counts things"))
-			recorder := metric.Must(meter).NewInt64ValueRecorder("bytes.recieved", metric.WithDescription("Counts things"))
+			dump, _ := httputil.DumpRequestOut(r, true)
+			labels := []kv.KeyValue{kv.String("endpoint", path),
+				kv.String("a", "a")}
+			counter := metric.Must(meter).NewInt64Counter("api.hit")
+			recorder := metric.Must(meter).NewInt64ValueRecorder("bytes.recieved")
 			meter.RecordBatch(ctx,
-				ll,
+				labels,
 				counter.Measurement(1),
-				recorder.Measurement(55))
+				recorder.Measurement(int64(len(dump))))
 
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
@@ -70,19 +69,20 @@ func Handler(versionSvc version.Service, logger zerolog.Logger) *chi.Mux {
 	})
 
 	r.Use(
-		traceMW(logger.With().Str("api", "tracemw").Logger()),
+		telemetryMW(logger.With().Str("api", "tracemw").Logger()),
 		cors.Handler,
 	)
 
 	version := newVersionAPI(&versionSvc, logger.With().Str("api", "version").Logger())
 	version.Routes(r)
 
+	// This sets global metrics exporter to prometheus
 	exporter, err := prometheus.InstallNewPipeline(prometheus.Config{})
 	if err != nil {
-		log.Panicf("failed to initialize prometheus exporter %v", err)
+		logger.Err(err).Msg("failed to initialize prometheus exporter")
 	}
 
+	// Prometheus specific endpoint to scrape the metrics
 	r.HandleFunc("/metrics", exporter.ServeHTTP)
-
 	return r
 }
