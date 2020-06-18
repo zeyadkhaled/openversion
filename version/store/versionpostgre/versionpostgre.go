@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v4/log/zerologadapter"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/rs/zerolog"
-	"go.opentelemetry.io/otel/api/global"
+	"go.opentelemetry.io/otel/api/trace"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/errs"
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version"
@@ -17,14 +17,15 @@ import (
 type Store struct {
 	pool   *pgxpool.Pool
 	logger zerolog.Logger
+	tracer trace.Tracer
 }
 
 type querier interface {
 	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
 }
 
-func get(ctx context.Context, q querier, id string) (a version.Application, err error) {
-	ctx, span := global.Tracer("service").Start(ctx, "store.postgre.get")
+func get(ctx context.Context, q querier, id string, tracer trace.Tracer) (a version.Application, err error) {
+	ctx, span := tracer.Start(ctx, "store.postgre.get")
 	defer span.End()
 
 	const query = `SELECT "id", "min_version", "package","created_at", "updated_at"
@@ -37,7 +38,7 @@ func get(ctx context.Context, q querier, id string) (a version.Application, err 
 	return a, nil
 }
 
-func New(ctx context.Context, connStr string, logger zerolog.Logger) (*Store, error) {
+func New(ctx context.Context, connStr string, logger zerolog.Logger, tracer trace.Tracer) (*Store, error) {
 	cc, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse pool config: %w", err)
@@ -52,13 +53,14 @@ func New(ctx context.Context, connStr string, logger zerolog.Logger) (*Store, er
 	store := &Store{
 		pool:   pgxPool,
 		logger: logger,
+		tracer: tracer,
 	}
 
 	return store, nil
 }
 
 func (store *Store) Upsert(ctx context.Context, a version.Application) error {
-	ctx, span := global.Tracer("service").Start(ctx, "store.postgre.Upsert")
+	ctx, span := store.tracer.Start(ctx, "store.postgre.Upsert")
 	defer span.End()
 
 	tx, err := store.pool.Begin(ctx)
@@ -72,7 +74,7 @@ func (store *Store) Upsert(ctx context.Context, a version.Application) error {
 		}
 	}()
 
-	_, err = get(ctx, tx, a.ID)
+	_, err = get(ctx, tx, a.ID, store.tracer)
 	if errs.Is(err, errs.KindNotFound) {
 		_, err = tx.Exec(ctx, `INSERT INTO backend.versions (
 			"id", "min_version", "package",
@@ -106,14 +108,14 @@ func (store *Store) Upsert(ctx context.Context, a version.Application) error {
 }
 
 func (store *Store) Get(ctx context.Context, id string) (a version.Application, err error) {
-	ctx, span := global.Tracer("service").Start(ctx, "store.postgre.Get")
+	ctx, span := store.tracer.Start(ctx, "store.postgre.Get")
 	defer span.End()
 
-	return get(ctx, store.pool, id)
+	return get(ctx, store.pool, id, store.tracer)
 }
 
 func (store *Store) List(ctx context.Context, limit int) (apps []version.Application, err error) {
-	ctx, span := global.Tracer("service").Start(ctx, "store.postgre.List")
+	ctx, span := store.tracer.Start(ctx, "store.postgre.List")
 	defer span.End()
 
 	query := `SELECT "id", "min_version", "package",

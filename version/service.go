@@ -6,16 +6,32 @@ import (
 	"time"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/errs"
-	"go.opentelemetry.io/otel/api/global"
+	"go.opentelemetry.io/otel/api/kv"
+	"go.opentelemetry.io/otel/api/metric"
+	"go.opentelemetry.io/otel/api/trace"
 )
 
-type Service struct {
-	store Store
+type Instruments struct {
+	ErrCounter      metric.Int64Counter
+	ProcessDuration metric.Int64ValueRecorder
 }
 
-func New(store Store) *Service {
+type Metric struct {
+	Meter       metric.Meter
+	Instruments Instruments
+}
+
+type Service struct {
+	store    Store
+	Tracer   trace.Tracer
+	Meterics Metric
+}
+
+func New(store Store, tracer trace.Tracer, meterics Metric) *Service {
 	return &Service{
-		store: store,
+		store:    store,
+		Tracer:   tracer,
+		Meterics: meterics,
 	}
 }
 
@@ -26,7 +42,7 @@ type Store interface {
 }
 
 func (svc *Service) Add(ctx context.Context, a *Application) error {
-	ctx, span := global.Tracer("service").Start(ctx, "service.Add")
+	ctx, span := svc.Tracer.Start(ctx, "service.Add")
 	defer span.End()
 
 	var errParams []string
@@ -41,6 +57,7 @@ func (svc *Service) Add(ctx context.Context, a *Application) error {
 		errParams = append(errParams, "package")
 	}
 	if len(errParams) > 0 {
+		svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "Add")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
 		return errs.E{Kind: errs.KindParameterErr, Parameters: errParams}
 	}
 
@@ -53,21 +70,27 @@ func (svc *Service) Add(ctx context.Context, a *Application) error {
 		return nil
 	}
 
+	svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "Add")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
 	return err
 }
 
 func (svc *Service) Get(ctx context.Context, id string) (Application, error) {
-	ctx, span := global.Tracer("service").Start(ctx, "service.Get")
+	ctx, span := svc.Tracer.Start(ctx, "service.Get")
 	defer span.End()
 
-	return svc.store.Get(ctx, id)
+	a, err := svc.store.Get(ctx, id)
+	if err != nil {
+		svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "Get")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
+	}
+	return a, err
 }
 
 func (svc *Service) UpdateVersion(ctx context.Context, a Application) error {
-	ctx, span := global.Tracer("service").Start(ctx, "service.UpdateVersion")
+	ctx, span := svc.Tracer.Start(ctx, "service.UpdateVersion")
 	defer span.End()
 
 	if a.ID == "" {
+		svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "UpdateVersion")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
 		return errs.E{
 			Kind:    errs.KindInternal,
 			Wrapped: fmt.Errorf("given struct is missing ID"),
@@ -76,6 +99,7 @@ func (svc *Service) UpdateVersion(ctx context.Context, a Application) error {
 
 	aFrom, err := svc.store.Get(ctx, a.ID)
 	if err != nil {
+		svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "UpdateVersion")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
 		return err
 	}
 
@@ -86,11 +110,12 @@ func (svc *Service) UpdateVersion(ctx context.Context, a Application) error {
 }
 
 func (svc *Service) List(ctx context.Context, limit int) ([]Application, error) {
-	ctx, span := global.Tracer("service").Start(ctx, "service.List")
+	ctx, span := svc.Tracer.Start(ctx, "service.List")
 	defer span.End()
 
 	applications, err := svc.store.List(ctx, limit)
 	if err != nil {
+		svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "List")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
 		return []Application{}, err
 	}
 

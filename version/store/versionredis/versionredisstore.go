@@ -10,7 +10,8 @@ import (
 
 	"github.com/go-redis/redis/v7"
 	"github.com/rs/zerolog"
-	"go.opentelemetry.io/otel/api/global"
+
+	tracer "go.opentelemetry.io/otel/api/trace"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version"
 )
@@ -21,10 +22,11 @@ type Store struct {
 	timeout time.Duration
 	logger  zerolog.Logger
 
-	base version.Store
+	base   version.Store
+	tracer tracer.Tracer
 }
 
-func New(addr, pass string, db int, keyPrefix string, timeout time.Duration, logger zerolog.Logger, base version.Store) (*Store, error) {
+func New(addr, pass string, db int, keyPrefix string, timeout time.Duration, logger zerolog.Logger, base version.Store, tracer tracer.Tracer) (*Store, error) {
 	if keyPrefix != "" && !strings.HasSuffix(keyPrefix, ":") {
 		keyPrefix += ":"
 	}
@@ -46,12 +48,13 @@ func New(addr, pass string, db int, keyPrefix string, timeout time.Duration, log
 		timeout: timeout,
 		logger:  logger,
 
-		base: base,
+		base:   base,
+		tracer: tracer,
 	}, nil
 }
 
 func (store *Store) upsertRedis(ctx context.Context, id string, a version.Application) error {
-	ctx, span := global.Tracer("service").Start(ctx, "store.redis.upsertRedis")
+	ctx, span := store.tracer.Start(ctx, "store.redis.upsertRedis")
 	defer span.End()
 
 	appByte, err := json.Marshal(a)
@@ -67,7 +70,7 @@ func (store *Store) upsertRedis(ctx context.Context, id string, a version.Applic
 }
 
 func (store *Store) deleteRedis(ctx context.Context, id string) {
-	ctx, span := global.Tracer("service").Start(ctx, "store.redis.deleteRedis")
+	ctx, span := store.tracer.Start(ctx, "store.redis.deleteRedis")
 	defer span.End()
 
 	_, err := store.c.Del(store.prefix + id).Result()
@@ -77,7 +80,7 @@ func (store *Store) deleteRedis(ctx context.Context, id string) {
 }
 
 func (store *Store) get(ctx context.Context, id string) (version.Application, error) {
-	ctx, span := global.Tracer("service").Start(ctx, "store.redis.get")
+	ctx, span := store.tracer.Start(ctx, "store.redis.get")
 	defer span.End()
 
 	a, err := store.base.Get(ctx, id)
@@ -93,7 +96,7 @@ func (store *Store) get(ctx context.Context, id string) (version.Application, er
 }
 
 func (store *Store) Get(ctx context.Context, id string) (version.Application, error) {
-	ctx, span := global.Tracer("service").Start(ctx, "store.redis.Get")
+	ctx, span := store.tracer.Start(ctx, "store.redis.Get")
 	defer span.End()
 
 	r, err := store.c.Get(store.prefix + id).Result()
@@ -114,7 +117,7 @@ func (store *Store) Get(ctx context.Context, id string) (version.Application, er
 }
 
 func (store *Store) Upsert(ctx context.Context, a version.Application) error {
-	ctx, span := global.Tracer("service").Start(ctx, "store.redis.Upsert")
+	ctx, span := store.tracer.Start(ctx, "store.redis.Upsert")
 	defer span.End()
 
 	err := store.base.Upsert(ctx, a)
@@ -123,7 +126,7 @@ func (store *Store) Upsert(ctx context.Context, a version.Application) error {
 }
 
 func (store *Store) List(ctx context.Context, limit int) ([]version.Application, error) {
-	ctx, span := global.Tracer("service").Start(ctx, "store.redis.List")
+	ctx, span := store.tracer.Start(ctx, "store.redis.List")
 	span.End()
 
 	return store.base.List(ctx, limit)

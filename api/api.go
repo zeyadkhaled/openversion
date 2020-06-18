@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version"
-	"go.opentelemetry.io/otel/api/global"
 	"go.opentelemetry.io/otel/api/kv"
 	"go.opentelemetry.io/otel/api/metric"
 	"go.opentelemetry.io/otel/api/trace"
@@ -18,7 +17,7 @@ import (
 	"github.com/rs/cors"
 )
 
-func telemetryMW(log zerolog.Logger) func(next http.Handler) http.Handler {
+func telemetryMW(log zerolog.Logger, tracer trace.Tracer, meter metric.Meter) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := "api.endpoint:" + r.URL.EscapedPath() + ":" + r.Method
@@ -27,8 +26,8 @@ func telemetryMW(log zerolog.Logger) func(next http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
+
 			// Tracing start
-			tracer := global.Tracer("service")
 			attrs, _, _ := httptrace.Extract(r.Context(), r)
 			ctx, span := tracer.Start(
 				r.Context(),
@@ -38,7 +37,6 @@ func telemetryMW(log zerolog.Logger) func(next http.Handler) http.Handler {
 			defer span.End()
 
 			// Metrics start
-			meter := global.Meter("service")
 			labels := []kv.KeyValue{kv.String("endpoint", path)}
 			counter := metric.Must(meter).NewInt64Counter("api.hit.count")
 			recorder := metric.Must(meter).NewInt64ValueRecorder("bytes.recieved")
@@ -67,7 +65,7 @@ func Handler(versionSvc version.Service, logger zerolog.Logger) *chi.Mux {
 	})
 
 	r.Use(
-		telemetryMW(logger.With().Str("api", "tracemw").Logger()),
+		telemetryMW(logger.With().Str("api", "tracemw").Logger(), versionSvc.Tracer, versionSvc.Meterics.Meter),
 		cors.Handler,
 	)
 

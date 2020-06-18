@@ -1,12 +1,15 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/otel/api/kv"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/errs"
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/internal/pkgs/errs/errshttp"
@@ -33,6 +36,8 @@ func (api versionAPI) Routes(r chi.Router) {
 }
 
 func (api versionAPI) newVersion(w http.ResponseWriter, r *http.Request) {
+	defer processDuration(r.Context(), time.Now(), "newVersion", api.svc.Meterics)
+
 	var app version.Application
 	err := json.NewDecoder(r.Body).Decode(&app)
 	if err != nil {
@@ -53,6 +58,7 @@ func (api versionAPI) newVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api versionAPI) getVersion(w http.ResponseWriter, r *http.Request) {
+	defer processDuration(r.Context(), time.Now(), "getVersion", api.svc.Meterics)
 
 	app, err := api.svc.Get(r.Context(), chi.URLParam(r, "appid"))
 	if err != nil {
@@ -63,6 +69,8 @@ func (api versionAPI) getVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api versionAPI) updateVersion(w http.ResponseWriter, r *http.Request) {
+	defer processDuration(r.Context(), time.Now(), "updateVersion", api.svc.Meterics)
+
 	id := chi.URLParam(r, "appid")
 
 	var app version.Application
@@ -93,6 +101,8 @@ func (api versionAPI) updateVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api versionAPI) listVersions(w http.ResponseWriter, r *http.Request) {
+	defer processDuration(r.Context(), time.Now(), "listVersions", api.svc.Meterics)
+
 	lim := 100
 	if l, err := strconv.Atoi(r.FormValue("limit")); err == nil {
 		lim = l
@@ -105,6 +115,11 @@ func (api versionAPI) listVersions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonWrite(api.logger, w, http.StatusOK, resp)
+}
+
+func processDuration(ctx context.Context, start time.Time, endpoint string, metric version.Metric) {
+	elapsed := time.Since(start)
+	metric.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("api.handler", endpoint)}, metric.Instruments.ProcessDuration.Measurement(elapsed.Nanoseconds()))
 }
 
 func jsonWrite(logger zerolog.Logger, w http.ResponseWriter, status int, t interface{}) {

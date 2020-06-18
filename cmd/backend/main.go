@@ -10,6 +10,8 @@ import (
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version"
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version/store/versionpostgre"
 	versionredisstore "gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version/store/versionredis"
+	"go.opentelemetry.io/otel/api/global"
+	"go.opentelemetry.io/otel/api/metric"
 
 	"github.com/rs/zerolog"
 	"golang.org/x/sync/errgroup"
@@ -22,10 +24,12 @@ const (
 )
 
 func initService(ctx context.Context, logger zerolog.Logger) version.Service {
+	tracer := global.Tracer("service")
+	meter := global.Meter("service")
 	versionStore, err := versionpostgre.New(
 		ctx,
 		postgreConnStr,
-		logger.With().Str("package", "versionpostgre").Logger(),
+		logger.With().Str("package", "versionpostgre").Logger(), tracer,
 	)
 	if err != nil {
 		log.Fatal("Failed to create postgre store", err)
@@ -33,13 +37,23 @@ func initService(ctx context.Context, logger zerolog.Logger) version.Service {
 
 	versionCacheStore, err := versionredisstore.New(redisConnStr, "",
 		0, "versionredis", time.Duration(time.Minute*30),
-		logger.With().Str("package", "version").Logger(), versionStore)
+		logger.With().Str("package", "version").Logger(), versionStore, tracer)
 	if err != nil {
 		logger.Error().Err(err).Msg("failed to create version cache store")
 		log.Fatal(err)
 	}
 
-	return *version.New(versionCacheStore)
+	instruments := version.Instruments{
+		ErrCounter:      metric.Must(meter).NewInt64Counter("errors.counter"),
+		ProcessDuration: metric.Must(meter).NewInt64ValueRecorder("process.duration"),
+	}
+
+	metrics := version.Metric{
+		Meter:       meter,
+		Instruments: instruments,
+	}
+
+	return *version.New(versionCacheStore, tracer, metrics)
 }
 
 func main() {
@@ -47,6 +61,8 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	logger := zerolog.New(zerolog.NewConsoleWriter()).Level(zerolog.DebugLevel)
 	versionSvc := initService(ctx, logger)
+	// This is disabled because OTLP metric
+	// exporter/pusher isn't being used
 	// defer initProviders().Stop()
 	initProviders().Stop()
 
