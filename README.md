@@ -211,6 +211,16 @@ services to capture distributed traces and metrics from your application.
   received data to multiple pipelines. This can be done by simply listing the
   same receiver in the “receivers” key of several pipelines.
 
+###### Prometheus Reciever
+
+- When prometheus is used as a receiver it used as a drop-in replacement to
+  scrape the services declared under it just as if it is declared inside of a
+  prometheus.yml file.
+
+[Prometheus Receiver](https://github.com/open-telemetry/opentelemetry-collector/tree/master/receiver/prometheusreceiver)
+
+
+
 ##### Exporters
 
 - Exporters typically forward the data they get to a destination on a network
@@ -358,11 +368,10 @@ service:
 ## Demo Project
 
 
+
 ## Extras
 
-### Performance Notes
-
-#### Tracing performance
+### Collecting Traces
 
 - From exporter-side:
   - Per config package of OPTL sdk/trace
@@ -383,7 +392,7 @@ service:
 
   - https://github.com/open-telemetry/opentelemetry-collector/blob/master/docs/performance.md
   
-#### Collecting Metrics
+### Collecting Metrics
 
 - So OpenTelemetry metrics api has 3 instruments to report metrics and summarized they are
 
@@ -393,12 +402,11 @@ service:
     - Measures, to which you Record a value. These are useful to build histograms or summaries, metric projections that let you calculate averages of many values.
     [Understanding Metrics in OPTL](https://lightstep.com/blog/opentelemetry-101-what-are-metrics/)
     
-    - [RED, USE, 4 Golden Signals](https://medium.com/thron-tech/how-we-implemented-red-and-use-metrics-for-monitoring-9a7db29382af)
+- [Indepth dive of OpenTelemetry Metrics API Specification](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/metrics/api.md)
+- [RED, USE, 4 Golden Signals for collecting Metrics](https://medium.com/thron-tech/how-we-implemented-red-and-use-metrics-for-monitoring-9a7db29382af)
 #### How to use spans optimally
 
   - [Trace Semantic conventions](https://github.com/open-telemetry/opentelemetry-specification/tree/master/specification/trace/semantic_conventions)
   
   - [Understanding Span Attributes](https://docs.lightstep.com/otel/spans-in-opentelemetry)
 
-
-https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/metrics/api.md
