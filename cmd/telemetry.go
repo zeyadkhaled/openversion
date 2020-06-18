@@ -38,6 +38,7 @@ func initProviders() *push.Controller {
 	global.SetTraceProvider(tp)
 
 	// This sets OTLP as the global metric exporter
+	// Comment out if another metric exporter is going to be used i.e prometheus
 	// global.SetMeterProvider(pusher.Provider())
 	pusher.Start()
 
