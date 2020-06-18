@@ -1,14 +1,15 @@
 package api
 
 import (
+	"log"
 	"net/http"
-	"net/http/httputil"
 
 	"gitlab.innology.com.tr/zabuamer/open-telemetry-go-integration/version"
 	"go.opentelemetry.io/otel/api/global"
 	"go.opentelemetry.io/otel/api/kv"
 	"go.opentelemetry.io/otel/api/metric"
 	"go.opentelemetry.io/otel/api/trace"
+	"go.opentelemetry.io/otel/exporters/metric/prometheus"
 	"go.opentelemetry.io/otel/plugin/httptrace"
 
 	"github.com/rs/zerolog"
@@ -32,14 +33,22 @@ func traceMW(log zerolog.Logger) func(next http.Handler) http.Handler {
 			defer span.End()
 
 			meter := global.Meter("service")
-			counter := metric.Must(meter).NewInt64Counter("api_hit").Bind(kv.String("endpoint", path))
-			defer counter.Unbind()
-			counter.Add(ctx, 1)
+			// counter := metric.Must(meter).NewInt64Counter("api.hit").Bind(kv.String("endpoint", path))
+			// defer counter.Unbind()
+			// counter.Add(r.Context(), 1)
 
-			dump, _ := httputil.DumpRequestOut(r, true)
-			recorder := metric.Must(meter).NewInt64ValueRecorder("bytes_recieved").Bind(kv.String("endpoint", path))
-			defer recorder.Unbind()
-			recorder.Record(ctx, int64(len(dump)))
+			// dump, _ := httputil.DumpRequestOut(r, true)
+			// recorder := metric.Must(meter).NewInt64ValueRecorder("bytes.recieved").Bind(kv.String("endpoint", path))
+			// defer recorder.Unbind()
+			// recorder.Record(r.Context(), int64(len(dump)))
+
+			ll := []kv.KeyValue{kv.String("endpoint", path)}
+			counter := metric.Must(meter).NewInt64Counter("api.hit", metric.WithDescription("Counts things"))
+			recorder := metric.Must(meter).NewInt64ValueRecorder("bytes.recieved", metric.WithDescription("Counts things"))
+			meter.RecordBatch(ctx,
+				ll,
+				counter.Measurement(1),
+				recorder.Measurement(55))
 
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
@@ -67,6 +76,13 @@ func Handler(versionSvc version.Service, logger zerolog.Logger) *chi.Mux {
 
 	version := newVersionAPI(&versionSvc, logger.With().Str("api", "version").Logger())
 	version.Routes(r)
+
+	exporter, err := prometheus.InstallNewPipeline(prometheus.Config{})
+	if err != nil {
+		log.Panicf("failed to initialize prometheus exporter %v", err)
+	}
+
+	r.HandleFunc("/metrics", exporter.ServeHTTP)
 
 	return r
 }

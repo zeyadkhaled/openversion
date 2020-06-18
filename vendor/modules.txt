@@ -1,5 +1,9 @@
 # github.com/DataDog/sketches-go v0.0.0-20190923095040-43f19ad77ff7
 github.com/DataDog/sketches-go/ddsketch
+# github.com/beorn7/perks v1.0.1
+github.com/beorn7/perks/quantile
+# github.com/cespare/xxhash/v2 v2.1.1
+github.com/cespare/xxhash/v2
 # github.com/go-chi/chi v4.1.1+incompatible
 ## explicit
 github.com/go-chi/chi
@@ -54,6 +58,8 @@ github.com/jackc/pgx/v4/log/zerologadapter
 github.com/jackc/pgx/v4/pgxpool
 # github.com/jackc/puddle v1.1.0
 github.com/jackc/puddle
+# github.com/matttproud/golang_protobuf_extensions v1.0.1
+github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/open-telemetry/opentelemetry-proto v0.3.0
 github.com/open-telemetry/opentelemetry-proto/gen/go/collector/metrics/v1
 github.com/open-telemetry/opentelemetry-proto/gen/go/collector/trace/v1
@@ -61,6 +67,20 @@ github.com/open-telemetry/opentelemetry-proto/gen/go/common/v1
 github.com/open-telemetry/opentelemetry-proto/gen/go/metrics/v1
 github.com/open-telemetry/opentelemetry-proto/gen/go/resource/v1
 github.com/open-telemetry/opentelemetry-proto/gen/go/trace/v1
+# github.com/prometheus/client_golang v1.5.0
+github.com/prometheus/client_golang/prometheus
+github.com/prometheus/client_golang/prometheus/internal
+github.com/prometheus/client_golang/prometheus/promhttp
+# github.com/prometheus/client_model v0.2.0
+github.com/prometheus/client_model/go
+# github.com/prometheus/common v0.9.1
+github.com/prometheus/common/expfmt
+github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
+github.com/prometheus/common/model
+# github.com/prometheus/procfs v0.0.10
+github.com/prometheus/procfs
+github.com/prometheus/procfs/internal/fs
+github.com/prometheus/procfs/internal/util
 # github.com/rs/cors v1.7.0
 ## explicit
 github.com/rs/cors
@@ -83,6 +103,7 @@ go.opentelemetry.io/otel/api/metric/registry
 go.opentelemetry.io/otel/api/propagation
 go.opentelemetry.io/otel/api/trace
 go.opentelemetry.io/otel/api/unit
+go.opentelemetry.io/otel/exporters/metric/stdout
 go.opentelemetry.io/otel/internal/metric
 go.opentelemetry.io/otel/internal/trace/parent
 go.opentelemetry.io/otel/plugin/httptrace
@@ -97,6 +118,7 @@ go.opentelemetry.io/otel/sdk/metric/aggregator/ddsketch
 go.opentelemetry.io/otel/sdk/metric/aggregator/histogram
 go.opentelemetry.io/otel/sdk/metric/aggregator/minmaxsumcount
 go.opentelemetry.io/otel/sdk/metric/aggregator/sum
+go.opentelemetry.io/otel/sdk/metric/controller/pull
 go.opentelemetry.io/otel/sdk/metric/controller/push
 go.opentelemetry.io/otel/sdk/metric/controller/time
 go.opentelemetry.io/otel/sdk/metric/integrator/simple
@@ -104,6 +126,9 @@ go.opentelemetry.io/otel/sdk/metric/selector/simple
 go.opentelemetry.io/otel/sdk/resource
 go.opentelemetry.io/otel/sdk/trace
 go.opentelemetry.io/otel/sdk/trace/internal
+# go.opentelemetry.io/otel/exporters/metric/prometheus v0.6.0
+## explicit
+go.opentelemetry.io/otel/exporters/metric/prometheus
 # go.opentelemetry.io/otel/exporters/otlp v0.6.0
 ## explicit
 go.opentelemetry.io/otel/exporters/otlp
@@ -126,6 +151,7 @@ golang.org/x/sync/errgroup
 ## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
+golang.org/x/sys/windows
 # golang.org/x/text v0.3.2
 golang.org/x/text/cases
 golang.org/x/text/internal

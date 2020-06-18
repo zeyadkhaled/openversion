@@ -43,11 +43,11 @@ func initService(ctx context.Context, logger zerolog.Logger) version.Service {
 }
 
 func main() {
-	initProviders()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	logger := zerolog.New(zerolog.NewConsoleWriter()).Level(zerolog.DebugLevel)
 	versionSvc := initService(ctx, logger)
+	defer initProviders().Stop()
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {

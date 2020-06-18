@@ -12,7 +12,7 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
-func initProviders() {
+func initProviders() *push.Controller {
 	collectorAddr, ok := os.LookupEnv("OTEL_RECIEVER_ENDPOINT")
 	if !ok {
 		collectorAddr = otlp.DefaultCollectorHost + ":" + string(otlp.DefaultCollectorHost)
