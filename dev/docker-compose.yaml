@@ -29,13 +29,6 @@ services:
     ports: 
       - "8088:8088"
 
-  jaeger-all-in-one:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - "16686:16686"
-      - "14268"
-      - "14250"
-
   otel-collector:
     image: ${OTELCOL_IMG}
     command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
@@ -51,8 +44,6 @@ services:
       - "13133:13133" 
       - "55678:55678"       
       - "55680:55679"
-    depends_on:
-      - jaeger-all-in-one   
   
   prometheus:
     container_name: prometheus

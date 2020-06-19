@@ -24,9 +24,6 @@ exporters:
     number_of_workers: 3
     skip_create_metric_descriptor: true
 
-  # jaeger:
-  #   endpoint: "jaeger-all-in-one:14250"
-
 processors:
   batch:
   queued_retry:
