@@ -119,7 +119,7 @@ func (api versionAPI) listVersions(w http.ResponseWriter, r *http.Request) {
 
 func processDuration(ctx context.Context, start time.Time, endpoint string, metric version.Metric) {
 	elapsed := time.Since(start)
-	metric.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("api.handler", endpoint)}, metric.Instruments.ProcessDuration.Measurement(elapsed.Nanoseconds()))
+	metric.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("api.handler", endpoint)}, metric.Instruments.ProcessDuration.Measurement(elapsed.Seconds()))
 }
 
 func jsonWrite(logger zerolog.Logger, w http.ResponseWriter, status int, t interface{}) {

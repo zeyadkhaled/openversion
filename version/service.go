@@ -13,7 +13,7 @@ import (
 
 type Instruments struct {
 	ErrCounter      metric.Int64Counter
-	ProcessDuration metric.Int64ValueRecorder
+	ProcessDuration metric.Float64ValueRecorder
 }
 
 type Metric struct {

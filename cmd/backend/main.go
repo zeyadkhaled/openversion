@@ -45,7 +45,7 @@ func initService(ctx context.Context, logger zerolog.Logger) version.Service {
 
 	instruments := version.Instruments{
 		ErrCounter:      metric.Must(meter).NewInt64Counter("errors.counter"),
-		ProcessDuration: metric.Must(meter).NewInt64ValueRecorder("process.duration"),
+		ProcessDuration: metric.Must(meter).NewFloat64ValueRecorder("process.duration"),
 	}
 
 	metrics := version.Metric{
@@ -64,7 +64,7 @@ func main() {
 	// This is disabled because OTLP metric
 	// exporter/pusher isn't being used
 	// defer initProviders().Stop()
-	initProviders().Stop()
+	initProviders()
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
