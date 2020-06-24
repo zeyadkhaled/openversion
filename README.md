@@ -358,6 +358,10 @@ service:
 
 - Move to dev folder ``cd /dev``
 - Run ``docker-compose up`` command.
+- After the containers are up, run ``cd ../sqlfiles`` and then 
+``gomigrate --source=file://. --database=postgres://postgres:roottoor@localhost:5432/backend\?sslmode=disable up``
+  - gomigrate is an sql migration tool that sets the postgres DB with the scheme
+    and the tables.
 
 - If every thing is successful you will start seeing your stats showing in your
   deployed exporters.
@@ -367,7 +371,59 @@ service:
 
 ## Demo Project
 
+### Understadning the Concept
 
+- This project serves as an example of a Microservice that holds the current
+  version for different applications. It is thought of as a service that will be
+  quereyed by other services to get latest information about a specific
+  application or about itself.
+
+- The application stores its information primarly in postgres with a middle
+  redis cache layer.
+
+- The application is made to showcase OTEL Tracing and Metrics functionalities.
+  - Tracing entry point is set in the  Telemetry middlware where a span is
+    created and the context is propagated all the way until all service has and
+    the stores finished their queries.
+  - Metrics depend on 4 different instruments, 2 of which are set in the
+    MiddleWare to capture traffic count and weight. The other 2 are part of the
+    service and stores where errors are counted and response times are measured.
+
+
+### Core packages
+
+- api package:
+  - api.go:
+    - Where the routes are added to router and also the Middleware for Tracing
+      and Metrics collection is declared.
+  - versionapi.go:
+    - Where the endpoints are declared and their respective handlers are
+      initialized by making calls to the underlying (version) service.
+
+- cmd/backend package:
+  - main.go:
+    - Initializes all the services,stores,api,and http server
+  - telemetry.go:
+    - Intializes the OTEL exporter for traces and the pusher for metrics and
+      sets both in the global providers.
+
+- dev package:
+  - contains files related with docker-compose, environment variables, requests
+    file to test your server endpoints.
+
+- version package:
+  - store package:
+    - contains two declarations of the store interface in the version service.
+      - redisstore is used as a cache layer
+      - postgres store is the main store
+  
+  - service.go:
+    - contains the structure of the service, declration of the structs it
+      depends on, and the service methods.
+
+  - version.go:
+    - contains the declaration of the Application struct.
+    
 
 ## Extras
 
@@ -402,8 +458,12 @@ service:
     - Measures, to which you Record a value. These are useful to build histograms or summaries, metric projections that let you calculate averages of many values.
     [Understanding Metrics in OPTL](https://lightstep.com/blog/opentelemetry-101-what-are-metrics/)
     
-- [Indepth dive of OpenTelemetry Metrics API Specification](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/metrics/api.md)
-- [RED, USE, 4 Golden Signals for collecting Metrics](https://medium.com/thron-tech/how-we-implemented-red-and-use-metrics-for-monitoring-9a7db29382af)
+    - [Indepth dive of OpenTelemetry Metrics API Specification](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/metrics/api.md)
+
+    - [RED, USE, 4 Golden Signals for collecting Metrics](https://medium.com/thron-tech/how-we-implemented-red-and-use-metrics-for-monitoring-9a7db29382af)
+
+      - We choose RED for this specific demo as it targets mostly metrics related with APIs rather than underlying Infrastructure where USE would be a better fit.
+      
 #### How to use spans optimally
 
   - [Trace Semantic conventions](https://github.com/open-telemetry/opentelemetry-specification/tree/master/specification/trace/semantic_conventions)
