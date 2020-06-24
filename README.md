@@ -4,7 +4,7 @@
 
 1. [Introduction](#introduction)
 2. [Getting Started](#get-started)
-3. [Running the Collector](#running-this)
+3. [Running This](#running-this)
 4. [Demo Project](#demo-project)
 5. [Extra info](#extras)
 
@@ -14,7 +14,8 @@ The repository explains what is OpenTelemetry, OpenTelemetry Collector, OTLP
 (Open Telemetry Protocol), and will proceed with a get started guideline to
 integrate opentelemetry in your Go project and export your telemetry data to
 different backends that are supported by the core Collector project and
-additional backends coming from the community contributions.
+additional backends coming from the community contributions. The repository
+offers a mock microservice that makes use of collecting metrics and traces.
 
 
 ### What is OpenTelemetry
@@ -31,7 +32,7 @@ services to capture distributed traces and metrics from your application.
       at the least, are going to include a name, a time stamp and a field to
       represent some value.
 
-    - Most all metrics will enable you to tell if a resource is alive or dead,
+    - Most metrics will enable you to tell if a resource is alive or dead,
       but if the target is valuable enough you’ll want to be able to ascertain
       what is actually wrong with the system or going wrong. 
 
@@ -358,7 +359,7 @@ service:
 
 - Move to dev folder ``cd /dev``
 - Run ``docker-compose up`` command.
-- After the containers are up, run ``cd ../sqlfiles`` and then 
+- After the containers are up, run ``cd ../internal/sqlfiles`` and then 
 ``gomigrate --source=file://. --database=postgres://postgres:roottoor@localhost:5432/backend\?sslmode=disable up``
   - gomigrate is an sql migration tool that sets the postgres DB with the scheme
     and the tables.
@@ -469,4 +470,3 @@ service:
   - [Trace Semantic conventions](https://github.com/open-telemetry/opentelemetry-specification/tree/master/specification/trace/semantic_conventions)
   
   - [Understanding Span Attributes](https://docs.lightstep.com/otel/spans-in-opentelemetry)
-
