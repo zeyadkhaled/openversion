@@ -1,4 +1,5 @@
-# Open Telemetry Collector with OTLP Exporter
+# OpenVersion (Versioning microservice with OpenTelemetry)
+ Demo project that intergrates OpenTelemetry-go SDK and exports to GCP and Prometheus using Otel-Collector
 
 # Table of Contents
 
