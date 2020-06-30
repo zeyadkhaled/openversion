@@ -1,0 +1,48 @@
+receivers:
+  otlp:
+    endpoint: 0.0.0.0:55678
+
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'versionsvc-collector'
+          scrape_interval: 1s
+          static_configs:
+            - targets: ['open-telemetry-demo:8088']   
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: versionsvc
+
+  logging:
+    loglevel: debug
+    
+  stackdriver:
+    project: digital-waters-276111
+    metric_prefix: versionsvc
+    number_of_workers: 3
+    skip_create_metric_descriptor: true
+
+processors:
+  batch:
+  queued_retry:
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
+
+service:
+  extensions: [pprof, zpages, health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [logging,stackdriver]
+      processors: [batch, queued_retry]
+    metrics:
+      receivers: [prometheus]
+      exporters: [logging,prometheus]
+
