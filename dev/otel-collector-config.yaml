@@ -1,14 +1,8 @@
 receivers:
   otlp:
-    endpoint: 0.0.0.0:55678
-
-  prometheus:
-    config:
-      scrape_configs:
-        - job_name: 'versionsvc-collector'
-          scrape_interval: 1s
-          static_configs:
-            - targets: ['open-telemetry-demo:8088']   
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:55678
 
 exporters:
   prometheus:
@@ -17,12 +11,6 @@ exporters:
 
   logging:
     loglevel: debug
-    
-  stackdriver:
-    project: digital-waters-276111
-    metric_prefix: versionsvc
-    number_of_workers: 3
-    skip_create_metric_descriptor: true
 
 processors:
   batch:
@@ -40,9 +28,9 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [logging,stackdriver]
+      exporters: [logging]
       processors: [batch, queued_retry]
     metrics:
-      receivers: [prometheus]
+      receivers: [otlp]
       exporters: [logging,prometheus]
 
