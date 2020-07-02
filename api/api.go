@@ -18,6 +18,7 @@ import (
 )
 
 func telemetryMW(log zerolog.Logger, tracer trace.Tracer, meter metric.Meter) func(next http.Handler) http.Handler {
+	// Allocate metric instruments. These only need to be allocated once per middleware.
 	counter := metric.Must(meter).NewInt64Counter("api.hit.count")
 	recorder := metric.Must(meter).NewInt64ValueRecorder("bytes.recieved")
 
@@ -39,7 +40,7 @@ func telemetryMW(log zerolog.Logger, tracer trace.Tracer, meter metric.Meter) fu
 			)
 			defer span.End()
 
-			// Metrics start
+			// Metrics
 			labels := []kv.KeyValue{kv.String("endpoint", path)}
 			meter.RecordBatch(ctx,
 				labels,
