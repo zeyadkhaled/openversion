@@ -1,6 +1,8 @@
 receivers:
   otlp:
-    endpoint: 0.0.0.0:55678
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:55678
 
   prometheus:
     config:
