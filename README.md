@@ -356,13 +356,18 @@ service:
 
 
 ## Running this 
-
+- Before running, if you are using stackdriver exporter be sure to change the
+  credentials volume mounting in the docker-compose file i.e
+  `/Users/zeyad/gs.json:/etc/gs.json`
+  
 - Move to dev folder ``cd /dev``
 - Run ``docker-compose up`` command.
 - After the containers are up, run ``cd ../internal/sqlfiles`` and then 
-``gomigrate --source=file://. --database=postgres://postgres:roottoor@localhost:5432/backend\?sslmode=disable up``
-  - gomigrate is an sql migration tool that sets the postgres DB with the scheme
+``migrate --source=file://. --database=postgres://postgres:roottoor@localhost:5432/backend\?sslmode=disable up``
+  - migrate is an sql migration tool that sets the postgres DB with the scheme
     and the tables.
+    - Check /internal/sqlfiles/README.md for details on downloading sql
+      migration tool
 
 - If every thing is successful you will start seeing your stats showing in your
   deployed exporters.
