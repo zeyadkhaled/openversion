@@ -18,6 +18,9 @@ import (
 )
 
 func telemetryMW(log zerolog.Logger, tracer trace.Tracer, meter metric.Meter) func(next http.Handler) http.Handler {
+	counter := metric.Must(meter).NewInt64Counter("api.hit.count")
+	recorder := metric.Must(meter).NewInt64ValueRecorder("bytes.recieved")
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := "api.endpoint:" + r.URL.EscapedPath() + ":" + r.Method
@@ -38,8 +41,6 @@ func telemetryMW(log zerolog.Logger, tracer trace.Tracer, meter metric.Meter) fu
 
 			// Metrics start
 			labels := []kv.KeyValue{kv.String("endpoint", path)}
-			counter := metric.Must(meter).NewInt64Counter("api.hit.count")
-			recorder := metric.Must(meter).NewInt64ValueRecorder("bytes.recieved")
 			meter.RecordBatch(ctx,
 				labels,
 				counter.Measurement(1),

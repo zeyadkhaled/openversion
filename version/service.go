@@ -57,7 +57,7 @@ func (svc *Service) Add(ctx context.Context, a *Application) error {
 		errParams = append(errParams, "package")
 	}
 	if len(errParams) > 0 {
-		svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "Add")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
+		svc.Meterics.Instruments.ErrCounter.Add(ctx, 1, kv.String("service.method", "Add"))
 		return errs.E{Kind: errs.KindParameterErr, Parameters: errParams}
 	}
 
@@ -70,7 +70,7 @@ func (svc *Service) Add(ctx context.Context, a *Application) error {
 		return nil
 	}
 
-	svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "Add")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
+	svc.Meterics.Instruments.ErrCounter.Add(ctx, 1, kv.String("service.method", "Add"))
 	return err
 }
 
@@ -80,7 +80,7 @@ func (svc *Service) Get(ctx context.Context, id string) (Application, error) {
 
 	a, err := svc.store.Get(ctx, id)
 	if err != nil {
-		svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "Get")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
+		svc.Meterics.Instruments.ErrCounter.Add(ctx, 1, kv.String("service.method", "Get"))
 	}
 	return a, err
 }
@@ -90,7 +90,7 @@ func (svc *Service) UpdateVersion(ctx context.Context, a Application) error {
 	defer span.End()
 
 	if a.ID == "" {
-		svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "UpdateVersion")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
+		svc.Meterics.Instruments.ErrCounter.Add(ctx, 1, kv.String("service.method", "UpdateVersion"))
 		return errs.E{
 			Kind:    errs.KindInternal,
 			Wrapped: fmt.Errorf("given struct is missing ID"),
@@ -99,7 +99,7 @@ func (svc *Service) UpdateVersion(ctx context.Context, a Application) error {
 
 	aFrom, err := svc.store.Get(ctx, a.ID)
 	if err != nil {
-		svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "UpdateVersion")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
+		svc.Meterics.Instruments.ErrCounter.Add(ctx, 1, kv.String("service.method", "UpdateVersion"))
 		return err
 	}
 
@@ -115,7 +115,7 @@ func (svc *Service) List(ctx context.Context, limit int) ([]Application, error) 
 
 	applications, err := svc.store.List(ctx, limit)
 	if err != nil {
-		svc.Meterics.Meter.RecordBatch(ctx, []kv.KeyValue{kv.String("service.method", "List")}, svc.Meterics.Instruments.ErrCounter.Measurement(1))
+		svc.Meterics.Instruments.ErrCounter.Add(ctx, 1, kv.String("service.method", "List"))
 		return []Application{}, err
 	}
 
