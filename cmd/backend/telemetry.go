@@ -3,10 +3,12 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"go.opentelemetry.io/otel/api/global"
 	"go.opentelemetry.io/otel/exporters/otlp"
 	"go.opentelemetry.io/otel/sdk/metric/controller/push"
+	"go.opentelemetry.io/otel/sdk/metric/selector/simple"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
@@ -29,16 +31,13 @@ func initProviders() *push.Controller {
 
 	global.SetTraceProvider(tp)
 
-	// This sets OTLP as the global metric exporter
-	// Comment out if another metric exporter is going to be used i.e prometheus
-	// pusher := push.New(
-	// 	simple.NewWithExactDistribution(),
-	// 	exporter,
-	// 	push.WithStateful(true),
-	// 	push.WithPeriod(2*time.Second),
-	// )
-	// global.SetMeterProvider(pusher.Provider())
-	// pusher.Start()
+	pusher := push.New(
+		simple.NewWithExactDistribution(),
+		exporter,
+		push.WithPeriod(2*time.Second),
+	)
+	global.SetMeterProvider(pusher.Provider())
+	pusher.Start()
 
-	return nil
+	return pusher
 }

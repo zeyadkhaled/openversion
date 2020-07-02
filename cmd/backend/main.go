@@ -61,10 +61,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	logger := zerolog.New(zerolog.NewConsoleWriter()).Level(zerolog.DebugLevel)
 	versionSvc := initService(ctx, logger)
-	// This is disabled because OTLP metric
-	// exporter/pusher isn't being used
-	// defer initProviders().Stop()
-	initProviders()
+	defer initProviders().Stop()
 
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {

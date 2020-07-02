@@ -7,8 +7,7 @@ import (
 	"go.opentelemetry.io/otel/api/kv"
 	"go.opentelemetry.io/otel/api/metric"
 	"go.opentelemetry.io/otel/api/trace"
-	"go.opentelemetry.io/otel/exporters/metric/prometheus"
-	"go.opentelemetry.io/otel/plugin/httptrace"
+	"go.opentelemetry.io/otel/instrumentation/httptrace"
 	"opentelemetry.version.service/version"
 
 	"github.com/rs/zerolog"
@@ -71,14 +70,5 @@ func Handler(versionSvc version.Service, logger zerolog.Logger) *chi.Mux {
 
 	version := newVersionAPI(&versionSvc, logger.With().Str("api", "version").Logger())
 	version.Routes(r)
-
-	// This sets global metrics exporter to prometheus
-	exporter, err := prometheus.InstallNewPipeline(prometheus.Config{})
-	if err != nil {
-		logger.Err(err).Msg("failed to initialize prometheus exporter")
-	}
-
-	// Prometheus specific endpoint to scrape the metrics
-	r.HandleFunc("/metrics", exporter.ServeHTTP)
 	return r
 }
