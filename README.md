@@ -291,7 +291,7 @@ exporters:
       label1: value1
     
   stackdriver:
-    project: digital-waters-276111
+    project: project-id-here
     metric_prefix: prefix
     number_of_workers: 3
     skip_create_metric_descriptor: true
@@ -382,7 +382,7 @@ service:
 
 - This project serves as an example of a Microservice that holds the current
   version for different applications. It is thought of as a service that will be
-  quereyed by other services to get latest information about a specific
+  queried by other services to get latest information about a specific
   application or about itself.
 
 - The application stores its information primarly in postgres with a middle
@@ -453,6 +453,12 @@ service:
 
   - [Performance Notes on Collector](https://github.com/open-telemetry/opentelemetry-collector/blob/master/docs/performance.md)
   
+#### How to use spans optimally
+
+  - [Trace Semantic conventions](https://github.com/open-telemetry/opentelemetry-specification/tree/master/specification/trace/semantic_conventions)
+  
+  - [Understanding Span Attributes](https://docs.lightstep.com/otel/spans-in-opentelemetry)  
+  
 ### Collecting Metrics
 
 - So OpenTelemetry metrics api has 3 instruments to report metrics and summarized they are
@@ -468,9 +474,3 @@ service:
     - [RED, USE, 4 Golden Signals for collecting Metrics](https://medium.com/thron-tech/how-we-implemented-red-and-use-metrics-for-monitoring-9a7db29382af)
 
       - We choose RED for this specific demo as it targets mostly metrics related with APIs rather than underlying Infrastructure where USE would be a better fit.
-      
-#### How to use spans optimally
-
-  - [Trace Semantic conventions](https://github.com/open-telemetry/opentelemetry-specification/tree/master/specification/trace/semantic_conventions)
-  
-  - [Understanding Span Attributes](https://docs.lightstep.com/otel/spans-in-opentelemetry)
